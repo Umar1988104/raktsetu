@@ -1,6 +1,7 @@
 const express = require("express");
 const User = require("../models/User");
 const Donor = require("../models/Donor");
+const Request = require("../models/Request");
 const verifyToken = require("../middleware/verifyToken");
 
 const router = express.Router();
@@ -99,6 +100,64 @@ router.get("/me", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch your donor profile" });
+  }
+});
+
+// Registers a browser push token for this donor (if they've set up push).
+// Safe to call repeatedly — tokens are deduped.
+router.post("/me/fcm-token", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!user || user.role !== "donor") {
+      return res.status(403).json({ error: "Only donors have push tokens" });
+    }
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: "token is required" });
+
+    await Donor.updateOne({ user: user._id }, { $addToSet: { fcmTokens: token } });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to save push token" });
+  }
+});
+
+// Requests this donor was auto-matched and notified about — the real
+// accept/decline inbox (v0.4), shown on the Notifications page.
+router.get("/me/incoming-requests", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!user || user.role !== "donor") {
+      return res.status(403).json({ error: "Only donors have incoming requests" });
+    }
+    const donor = await Donor.findOne({ user: user._id });
+    if (!donor) return res.json({ incoming: [] });
+
+    const requests = await Request.find({ "contactedDonors.donor": donor._id })
+      .populate("seeker", "name phone")
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    const incoming = requests.map((r) => {
+      const mine = r.contactedDonors.find((c) => String(c.donor) === String(donor._id));
+      return {
+        requestId: r._id,
+        bloodGroup: r.bloodGroup,
+        units: r.units,
+        urgency: r.urgency,
+        hospital: r.hospital,
+        area: r.area,
+        requestStatus: r.status,
+        myResponse: mine.status,
+        notifiedAt: mine.notifiedAt,
+        seeker: r.seeker,
+      };
+    });
+
+    res.json({ incoming });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch incoming requests" });
   }
 });
 

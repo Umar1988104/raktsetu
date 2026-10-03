@@ -21,6 +21,15 @@ const requestSchema = new mongoose.Schema(
     },
     hospitalVerified: { type: Boolean, default: false }, // required for Critical urgency (v0.6)
     notes: { type: String, trim: true },
+    // Donors this request was auto-matched and notified to, with their individual response.
+    contactedDonors: [
+      {
+        donor: { type: mongoose.Schema.Types.ObjectId, ref: "Donor" },
+        status: { type: String, enum: ["Pending", "Accepted", "Declined"], default: "Pending" },
+        notifiedAt: { type: Date, default: Date.now },
+        respondedAt: { type: Date },
+      },
+    ],
   },
   { timestamps: true }
 );

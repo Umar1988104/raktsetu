@@ -14,6 +14,7 @@ const donorSchema = new mongoose.Schema(
     },
     available: { type: Boolean, default: true },
     verified: { type: Boolean, default: false },
+    fcmTokens: [{ type: String }], // registered browser push tokens, if push is set up
     donationHistory: [
       {
         date: { type: Date, default: Date.now },
