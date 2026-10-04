@@ -73,6 +73,15 @@ export default function RequestStatusPage() {
         <p>Track the status of your blood request in real time.</p>
       </div>
 
+      {request.urgency === "Critical" && !request.hospitalVerified && request.status === "Searching" && (
+        <div className="availability-card" style={{ marginBottom: 20 }}>
+          <span>
+            Awaiting verification from <strong>{request.hospital}</strong> before donors are notified —
+            this happens automatically once they verify it.
+          </span>
+        </div>
+      )}
+
       {!isExpired && (
         <div className="card">
           <div className="icon-stepper">
@@ -88,7 +97,7 @@ export default function RequestStatusPage() {
             })}
           </div>
 
-          {request.status !== "Fulfilled" && (
+          {request.status !== "Fulfilled" && !(request.urgency === "Critical" && !request.hospitalVerified) && (
             <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
               {STAGES.slice(currentIndex + 1).map((stage) => (
                 <button key={stage} className="secondary" disabled={busy} onClick={() => advanceStatus(stage)}>

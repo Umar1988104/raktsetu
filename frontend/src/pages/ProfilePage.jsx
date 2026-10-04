@@ -11,7 +11,57 @@ export default function ProfilePage() {
   const role = profile?.user?.role;
 
   if (role === "donor") return <DonorProfile />;
+  if (role === "hospital") return <HospitalProfile />;
   return <SeekerProfile />;
+}
+
+function HospitalProfile() {
+  const { profile, firebaseUser } = useAuth();
+  const initials = (profile?.user?.hospitalName || "?")
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  return (
+    <div>
+      <div className="page-header">
+        <h1>Profile</h1>
+        <p>Your hospital partner account details.</p>
+      </div>
+      <div className="card" style={{ maxWidth: 480 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
+          <div className="avatar" style={{ width: 56, height: 56, fontSize: "1.1rem" }}>
+            {initials}
+          </div>
+          <div>
+            <div className="row-title" style={{ fontSize: "1.05rem" }}>
+              {profile?.user?.hospitalName}
+            </div>
+            <div className="row-sub">Hospital / blood bank partner</div>
+          </div>
+        </div>
+        <div className="list-row">
+          <span className="row-sub">
+            <Mail size={14} style={{ marginRight: 6, verticalAlign: "middle" }} />
+            Email
+          </span>
+          <span>{firebaseUser?.email}</span>
+        </div>
+        <div className="list-row">
+          <span className="row-sub">
+            <Phone size={14} style={{ marginRight: 6, verticalAlign: "middle" }} />
+            Contact phone
+          </span>
+          <span>{profile?.user?.phone}</span>
+        </div>
+        <p style={{ fontSize: "0.82rem", color: "var(--text-soft)", marginTop: 14 }}>
+          Requests must list your hospital name exactly as above to show up for verification.
+        </p>
+      </div>
+    </div>
+  );
 }
 
 function SeekerProfile() {

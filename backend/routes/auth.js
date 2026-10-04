@@ -9,10 +9,13 @@ const router = express.Router();
 // Creates the RaktSetu profile (name, phone, role) for this Firebase user.
 router.post("/register", verifyToken, async (req, res) => {
   try {
-    const { name, phone, role } = req.body;
+    const { name, phone, role, hospitalName } = req.body;
 
-    if (!name || !phone || !["donor", "seeker"].includes(role)) {
-      return res.status(400).json({ error: "name, phone and a valid role ('donor' or 'seeker') are required" });
+    if (!name || !phone || !["donor", "seeker", "hospital"].includes(role)) {
+      return res.status(400).json({ error: "name, phone and a valid role ('donor', 'seeker' or 'hospital') are required" });
+    }
+    if (role === "hospital" && !hospitalName) {
+      return res.status(400).json({ error: "hospitalName is required for role 'hospital'" });
     }
 
     const existing = await User.findOne({ firebaseUid: req.user.uid });
@@ -26,6 +29,7 @@ router.post("/register", verifyToken, async (req, res) => {
       name,
       phone,
       role,
+      hospitalName: role === "hospital" ? hospitalName : undefined,
     });
 
     res.status(201).json({ user });

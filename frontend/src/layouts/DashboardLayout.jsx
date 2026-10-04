@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, PlusCircle, ClipboardList, Users, Bell, UserRound, LogOut, Droplet } from "lucide-react";
+import { LayoutDashboard, PlusCircle, ClipboardList, Users, Bell, UserRound, LogOut, Droplet, ShieldCheck } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function DashboardLayout() {
@@ -48,9 +48,17 @@ export default function DashboardLayout() {
             </>
           )}
 
-          <NavLink to="/notifications" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>
-            <Bell size={18} /> Notifications
-          </NavLink>
+          {role === "hospital" && (
+            <NavLink to="/verify" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>
+              <ShieldCheck size={18} /> Verify Requests
+            </NavLink>
+          )}
+
+          {role !== "hospital" && (
+            <NavLink to="/notifications" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>
+              <Bell size={18} /> Notifications
+            </NavLink>
+          )}
           <NavLink to="/profile" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>
             <UserRound size={18} /> Profile
           </NavLink>

@@ -13,6 +13,7 @@ import RequestStatusPage from "./pages/RequestStatusPage";
 import DonorNetworkPage from "./pages/DonorNetworkPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ProfilePage from "./pages/ProfilePage";
+import HospitalVerifyPage from "./pages/HospitalVerifyPage";
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/requests/:id" element={<RequestStatusPage />} />
           <Route path="/donors" element={<DonorNetworkPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/verify" element={<HospitalVerifyPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Routes>

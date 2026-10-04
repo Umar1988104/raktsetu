@@ -37,7 +37,13 @@ export default function NewRequestPage() {
     setStatus("");
     try {
       const data = await api.post("/api/requests", form);
-      navigate(`/requests/${data.request._id}`);
+      if (data.awaitingHospitalVerification) {
+        navigate(`/requests/${data.request._id}`, {
+          state: { justCreatedCritical: true },
+        });
+      } else {
+        navigate(`/requests/${data.request._id}`);
+      }
     } catch (err) {
       setStatus(err.message);
     } finally {
@@ -110,6 +116,14 @@ export default function NewRequestPage() {
               </button>
             ))}
           </div>
+
+          {form.urgency === "Critical" && (
+            <p className="status" style={{ marginTop: 10 }}>
+              Critical requests are held for hospital verification before donors are notified, to
+              prevent misuse of the highest urgency tier. Make sure the hospital name below exactly
+              matches a registered hospital partner account, or it won't be picked up.
+            </p>
+          )}
 
           <label>Notes (optional)</label>
           <textarea

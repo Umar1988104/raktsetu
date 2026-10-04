@@ -8,6 +8,7 @@ export default function CompleteProfile() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("seeker");
+  const [hospitalName, setHospitalName] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -16,7 +17,7 @@ export default function CompleteProfile() {
     setError("");
     setBusy(true);
     try {
-      await completeProfile({ name, phone, role });
+      await completeProfile({ name, phone, role, hospitalName });
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -58,7 +59,29 @@ export default function CompleteProfile() {
               />
               Donor
             </label>
+            <label>
+              <input
+                type="radio"
+                name="role"
+                value="hospital"
+                checked={role === "hospital"}
+                onChange={() => setRole("hospital")}
+              />
+              Hospital / blood bank partner
+            </label>
           </div>
+
+          {role === "hospital" && (
+            <>
+              <label>Hospital / blood bank name</label>
+              <input
+                value={hospitalName}
+                onChange={(e) => setHospitalName(e.target.value)}
+                placeholder="Must exactly match the hospital name seekers will enter"
+                required
+              />
+            </>
+          )}
 
           {error && <p className="error">{error}</p>}
           <button type="submit" disabled={busy}>

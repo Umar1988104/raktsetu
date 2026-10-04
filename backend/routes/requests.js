@@ -64,6 +64,14 @@ router.post("/", verifyToken, async (req, res) => {
       notes,
     });
 
+    // v0.6 — Critical requests are held back from contacting donors until a
+    // hospital partner account verifies them (reduces misuse of the most
+    // urgent tier). Normal/Urgent requests contact donors immediately, same
+    // as before.
+    if (request.urgency === "Critical") {
+      return res.status(201).json({ request, awaitingHospitalVerification: true });
+    }
+
     // v0.4/v0.5 — immediately find + notify compatible nearby donors, and
     // move the request to "Contacted" automatically since donors are now
     // actually being reached out to, not just sitting in "Searching".
@@ -95,6 +103,31 @@ router.get("/me", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch your requests" });
+  }
+});
+
+// Hospital partner account: Critical requests raised under their hospital
+// name, still awaiting verification. Registered BEFORE the generic "/:id"
+// route below, or Express would treat "pending-verification" as an :id.
+router.get("/pending-verification", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!user || user.role !== "hospital") {
+      return res.status(403).json({ error: "Only hospital accounts can view pending verifications" });
+    }
+
+    const requests = await Request.find({
+      urgency: "Critical",
+      hospitalVerified: false,
+      hospital: { $regex: `^${user.hospitalName}$`, $options: "i" },
+    })
+      .populate("seeker", "name phone")
+      .sort({ createdAt: -1 });
+
+    res.json({ requests });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch pending verifications" });
   }
 });
 
@@ -226,6 +259,40 @@ router.get("/:id/matches", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to find matches" });
+  }
+});
+
+// Hospital partner account verifies a Critical request actually originated
+// from them — this is what releases it to the matching engine (v0.6).
+router.patch("/:id/verify-hospital", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!user || user.role !== "hospital") {
+      return res.status(403).json({ error: "Only hospital accounts can verify requests" });
+    }
+
+    const request = await Request.findById(req.params.id);
+    if (!request) return res.status(404).json({ error: "Request not found" });
+
+    if (request.hospital.toLowerCase() !== user.hospitalName.toLowerCase()) {
+      return res.status(403).json({ error: "This request isn't under your hospital name" });
+    }
+
+    request.hospitalVerified = true;
+    await request.save();
+
+    // Now release it to the matching engine, same as a normal-urgency request.
+    const { donors } = await findRankedDonors(request, MAX_DONORS_TO_CONTACT);
+    if (donors.length > 0) {
+      request.contactedDonors = await contactDonors(request, donors);
+      request.status = "Contacted";
+      await request.save();
+    }
+
+    res.json({ request });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to verify request" });
   }
 });
 

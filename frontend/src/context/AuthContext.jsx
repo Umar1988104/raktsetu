@@ -52,8 +52,8 @@ export function AuthProvider({ children }) {
   }
 
   // Call after signup once the user fills in name/phone/role.
-  async function completeProfile({ name, phone, role }) {
-    const data = await api.post("/api/auth/register", { name, phone, role });
+  async function completeProfile({ name, phone, role, hospitalName }) {
+    const data = await api.post("/api/auth/register", { name, phone, role, hospitalName });
     await refreshProfile();
     return data;
   }

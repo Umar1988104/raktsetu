@@ -161,4 +161,50 @@ router.get("/me/incoming-requests", verifyToken, async (req, res) => {
   }
 });
 
+// Hospital partner account: search donors by name/phone/email to verify
+// someone who donated at their facility (v0.6 — donor verification badge).
+router.get("/search", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!user || user.role !== "hospital") {
+      return res.status(403).json({ error: "Only hospital accounts can search donors to verify" });
+    }
+    const { q } = req.query;
+    if (!q || q.trim().length < 2) return res.json({ donors: [] });
+
+    const matchingUsers = await User.find({
+      role: "donor",
+      $or: [{ name: { $regex: q, $options: "i" } }, { phone: { $regex: q, $options: "i" } }, { email: { $regex: q, $options: "i" } }],
+    }).select("_id");
+
+    const donors = await Donor.find({ user: { $in: matchingUsers.map((u) => u._id) } })
+      .populate("user", "name phone email")
+      .limit(20);
+
+    res.json({ donors });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to search donors" });
+  }
+});
+
+// Hospital partner account marks a donor as verified.
+router.patch("/:id/verify", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!user || user.role !== "hospital") {
+      return res.status(403).json({ error: "Only hospital accounts can verify donors" });
+    }
+    const donor = await Donor.findByIdAndUpdate(req.params.id, { verified: true }, { new: true }).populate(
+      "user",
+      "name phone email"
+    );
+    if (!donor) return res.status(404).json({ error: "Donor not found" });
+    res.json({ donor });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to verify donor" });
+  }
+});
+
 module.exports = router;
