@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Skeleton from "../components/Skeleton";
 import { ShieldCheck, Search, Droplet } from "lucide-react";
 import { api } from "../api";
 
@@ -67,7 +68,7 @@ export default function HospitalVerifyPage() {
       <div className="card">
         <h3>Pending Critical requests</h3>
         {!pending ? (
-          <p className="loading">Loading...</p>
+          <Skeleton rows={3} />
         ) : pending.length === 0 ? (
           <p className="empty-note">Nothing waiting on verification right now.</p>
         ) : (
@@ -111,9 +112,9 @@ export default function HospitalVerifyPage() {
           <div key={d._id} className="donor-card">
             <div className="donor-card-main">
               <div>
-                <div className="row-title">{d.user?.name}</div>
+                <div className="row-title">{d.display?.name}{d.display?.relation && ` (${d.display.relation})`}</div>
                 <div className="row-sub">
-                  {d.bloodGroup} · {d.area} · {d.user?.phone}
+                  {d.bloodGroup} · {d.area} · {d.display?.phone}
                 </div>
               </div>
             </div>

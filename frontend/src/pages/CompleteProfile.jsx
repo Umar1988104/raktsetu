@@ -35,7 +35,12 @@ export default function CompleteProfile() {
           <input value={name} onChange={(e) => setName(e.target.value)} required />
 
           <label>Phone number</label>
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} required />
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+            placeholder="10-digit mobile number"
+            required
+          />
 
           <label>I am a...</label>
           <div className="role-pick">

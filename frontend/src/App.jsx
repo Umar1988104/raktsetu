@@ -14,12 +14,18 @@ import DonorNetworkPage from "./pages/DonorNetworkPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ProfilePage from "./pages/ProfilePage";
 import HospitalVerifyPage from "./pages/HospitalVerifyPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import EmergencyRequestPage from "./pages/EmergencyRequestPage";
+import CampsPage from "./pages/CampsPage";
 
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/emergency" element={<EmergencyRequestPage />} />
+        <Route path="/camps" element={<CampsPage />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route

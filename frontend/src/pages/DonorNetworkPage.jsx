@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { Search, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Search, Lock } from "lucide-react";
 import { api } from "../api";
+
+const TIER_CLASS = { New: "pill-expired", Trusted: "pill-confirmed", Pillar: "pill-verified" };
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -38,7 +41,7 @@ export default function DonorNetworkPage() {
     <div>
       <div className="page-header">
         <h1>Donor network</h1>
-        <p>Find and connect with nearby donors.</p>
+        <p>See who's nearby — full contact details unlock once a request actually matches, to protect donor privacy.</p>
       </div>
 
       <form onSubmit={handleSearch} className="card">
@@ -75,32 +78,35 @@ export default function DonorNetworkPage() {
           <p className="empty-note">Use the filters above and click Search.</p>
         ) : donors.length === 0 ? (
           <div className="empty-state">
-            <div className="emoji">🔍</div>
+            <Search size={26} className="empty-icon" />
             <p>No donors match these filters yet.</p>
           </div>
         ) : (
           donors.map((d) => (
             <div key={d._id} className="donor-card">
               <div className="donor-card-main">
-                <div className="avatar">{initials(d.user?.name)}</div>
+                <div className="avatar">{initials(d.display?.name)}</div>
                 <div>
-                  <div className="row-title">{d.user?.name}</div>
+                  <div className="row-title">{d.display?.name}{d.display?.relation && ` (${d.display.relation})`}</div>
                   <div className="row-sub">
                     {d.bloodGroup} · {d.area}
                   </div>
-                  <div style={{ marginTop: 4, display: "flex", gap: 6 }}>
+                  <div style={{ marginTop: 4, display: "flex", gap: 6, flexWrap: "wrap" }}>
                     <span className={`pill ${d.available ? "pill-available" : "pill-unavailable"}`}>
                       {d.available ? "Available now" : "Not available"}
                     </span>
                     {d.verified && <span className="pill pill-verified">Verified</span>}
+                    <span className={`pill ${TIER_CLASS[d.trustTier] || "pill-expired"}`}>{d.trustTier}</span>
+                  </div>
+                  <div className="row-sub" style={{ marginTop: 4 }}>
+                    <Lock size={11} style={{ verticalAlign: "middle", marginRight: 4 }} />
+                    {d.display?.phone}
                   </div>
                 </div>
               </div>
-              <a href={`tel:${d.user?.phone}`}>
-                <button className="secondary">
-                  <Phone size={14} /> Contact
-                </button>
-              </a>
+              <Link to="/requests/new">
+                <button className="secondary">Raise a request</button>
+              </Link>
             </div>
           ))
         )}

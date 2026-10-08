@@ -6,6 +6,8 @@ const verifyToken = require("../middleware/verifyToken");
 const { findRankedDonors } = require("../utils/matching");
 const { sendPush } = require("../utils/sendPush");
 const { sendEmail } = require("../utils/sendEmail");
+const { resolveDonorContact } = require("../utils/familyHelpers");
+const { computeTrustTier } = require("../utils/trust");
 
 const MAX_DONORS_TO_CONTACT = 10;
 
@@ -15,6 +17,8 @@ const MAX_DONORS_TO_CONTACT = 10;
 async function contactDonors(request, donors) {
   const notified = [];
   for (const d of donors) {
+    const display = resolveDonorContact(d, d.user);
+
     const pushResult = await sendPush(d.fcmTokens, {
       title: `${request.bloodGroup} blood needed nearby`,
       body: `${request.units} unit(s) · ${request.urgency} · ${request.hospital}`,
@@ -22,10 +26,11 @@ async function contactDonors(request, donors) {
     });
 
     if (pushResult.sent === 0 && d.user?.email) {
+      const forWhom = display.isFamilyMember ? ` (for ${display.name})` : "";
       await sendEmail({
         to: d.user.email,
         subject: `RaktSetu: a ${request.bloodGroup} request needs your help`,
-        text: `A compatible blood request was just raised near you:\n\n${request.units} unit(s) of ${request.bloodGroup}\nUrgency: ${request.urgency}\nHospital: ${request.hospital}\nArea: ${request.area}\n\nLog into RaktSetu and check your Notifications tab to accept or decline.`,
+        text: `A compatible blood request was just raised near you${forWhom}:\n\n${request.units} unit(s) of ${request.bloodGroup}\nUrgency: ${request.urgency}\nHospital: ${request.hospital}\nArea: ${request.area}\n\nLog into RaktSetu and check your Notifications tab to accept or decline.`,
       });
     }
 
@@ -40,7 +45,21 @@ async function getCurrentUser(req) {
   return User.findOne({ firebaseUid: req.user.uid });
 }
 
-// Seeker raises a new blood request.
+// Attaches a resolved display name/relation to each populated contactedDonors
+// entry, so the frontend never has to re-derive "which family member" itself.
+function withContactedDonorDisplay(requestDoc) {
+  const r = requestDoc.toObject ? requestDoc.toObject() : requestDoc;
+  r.contactedDonors = (r.contactedDonors || []).map((c) => {
+    if (c.donor && c.donor.user) {
+      const display = resolveDonorContact(c.donor, c.donor.user);
+      return { ...c, donorDisplay: { name: display.name, relation: display.relation } };
+    }
+    return c;
+  });
+  return r;
+}
+
+// Seeker raises a new blood request — optionally on behalf of a family member.
 router.post("/", verifyToken, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
@@ -48,13 +67,42 @@ router.post("/", verifyToken, async (req, res) => {
       return res.status(403).json({ error: "Only accounts registered with role 'seeker' can create requests" });
     }
 
-    const { bloodGroup, units, urgency, hospital, area, lat, lng, notes } = req.body;
+    // Anti-spam (v1.2): a report-triggered cooldown applies to anyone.
+    if (user.throttledUntil && user.throttledUntil > new Date()) {
+      return res.status(429).json({
+        error: `New requests are temporarily blocked on this account until ${user.throttledUntil.toLocaleString()}, after a previous request was reported as fake.`,
+      });
+    }
+
+    const { bloodGroup, units, urgency, hospital, area, lat, lng, notes, familyMemberId } = req.body;
     if (!bloodGroup || !units || !hospital || !area || lat === undefined || lng === undefined) {
       return res.status(400).json({ error: "bloodGroup, units, hospital, area, lat and lng are required" });
     }
 
+    // Anti-spam (v1.2): guest (anonymous-auth) accounts are limited to one
+    // request per 24h per IP address — free to enforce, no SMS/paid service
+    // needed, and a real account lifts this limit entirely.
+    if (user.isGuest) {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const recentFromIp = await Request.countDocuments({ creatorIp: req.ip, createdAt: { $gte: since } });
+      if (recentFromIp > 0) {
+        return res.status(429).json({
+          error: "Only one guest request per 24 hours from this network. Create a full account for unlimited requests.",
+        });
+      }
+    }
+
+    let patientName = user.name;
+    if (familyMemberId) {
+      const fm = user.familyMembers.id(familyMemberId);
+      if (!fm) return res.status(400).json({ error: "That family member doesn't exist on this account" });
+      patientName = fm.name;
+    }
+
     const request = await Request.create({
       seeker: user._id,
+      familyMemberId: familyMemberId || null,
+      patientName,
       bloodGroup,
       units,
       urgency: urgency || "Normal",
@@ -62,19 +110,16 @@ router.post("/", verifyToken, async (req, res) => {
       area,
       location: { type: "Point", coordinates: [Number(lng), Number(lat)] },
       notes,
+      creatorIp: req.ip,
     });
 
     // v0.6 — Critical requests are held back from contacting donors until a
     // hospital partner account verifies them (reduces misuse of the most
-    // urgent tier). Normal/Urgent requests contact donors immediately, same
-    // as before.
+    // urgent tier). Normal/Urgent requests contact donors immediately.
     if (request.urgency === "Critical") {
       return res.status(201).json({ request, awaitingHospitalVerification: true });
     }
 
-    // v0.4/v0.5 — immediately find + notify compatible nearby donors, and
-    // move the request to "Contacted" automatically since donors are now
-    // actually being reached out to, not just sitting in "Searching".
     const { donors } = await findRankedDonors(request, MAX_DONORS_TO_CONTACT);
     if (donors.length > 0) {
       request.contactedDonors = await contactDonors(request, donors);
@@ -84,6 +129,7 @@ router.post("/", verifyToken, async (req, res) => {
 
     res.status(201).json({ request });
   } catch (err) {
+    if (err.name === "ValidationError") return res.status(400).json({ error: err.message });
     console.error(err);
     res.status(500).json({ error: "Failed to create request" });
   }
@@ -97,9 +143,9 @@ router.get("/me", verifyToken, async (req, res) => {
       return res.status(403).json({ error: "Only seekers have requests" });
     }
     const requests = await Request.find({ seeker: user._id })
-      .populate({ path: "contactedDonors.donor", populate: { path: "user", select: "name phone" } })
+      .populate({ path: "contactedDonors.donor", populate: { path: "user", select: "name phone familyMembers" } })
       .sort({ createdAt: -1 });
-    res.json({ requests });
+    res.json({ requests: requests.map(withContactedDonorDisplay) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch your requests" });
@@ -137,10 +183,10 @@ router.get("/:id", verifyToken, async (req, res) => {
     const user = await getCurrentUser(req);
     const request = await Request.findOne({ _id: req.params.id, seeker: user._id }).populate({
       path: "contactedDonors.donor",
-      populate: { path: "user", select: "name phone" },
+      populate: { path: "user", select: "name phone familyMembers" },
     });
     if (!request) return res.status(404).json({ error: "Request not found" });
-    res.json({ request });
+    res.json({ request: withContactedDonorDisplay(request) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch request" });
@@ -148,9 +194,8 @@ router.get("/:id", verifyToken, async (req, res) => {
 });
 
 // Seeker-triggered status change. Fulfilled is the one stage that genuinely
-// needs a human to confirm it (only the seeker knows the donation actually
-// happened) — when it's set, every donor who accepted gets a donation-history
-// entry logged automatically (v0.5).
+// needs a human to confirm it — when set, every donor who accepted gets a
+// donation-history entry logged automatically.
 router.patch("/:id/status", verifyToken, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
@@ -183,8 +228,10 @@ router.patch("/:id/status", verifyToken, async (req, res) => {
   }
 });
 
-// Donor accepts or declines a request they were notified about. Accepting
-// auto-advances the request to "Confirmed" (v0.5) — no manual step needed.
+// Donor accepts or declines a request they were notified about — specifying
+// WHICH of their account's donor profiles (self or a family member) is
+// responding, since one login can now have several. Accepting auto-advances
+// the request to "Confirmed".
 router.post("/:id/respond", verifyToken, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
@@ -192,13 +239,14 @@ router.post("/:id/respond", verifyToken, async (req, res) => {
       return res.status(403).json({ error: "Only donors can respond to requests" });
     }
 
-    const { response } = req.body;
+    const { response, donorId } = req.body;
     if (!["Accepted", "Declined"].includes(response)) {
       return res.status(400).json({ error: "response must be 'Accepted' or 'Declined'" });
     }
+    if (!donorId) return res.status(400).json({ error: "donorId is required" });
 
-    const donor = await Donor.findOne({ user: user._id });
-    if (!donor) return res.status(404).json({ error: "No donor profile found" });
+    const donor = await Donor.findOne({ _id: donorId, user: user._id });
+    if (!donor) return res.status(404).json({ error: "That donor profile isn't under your account" });
 
     const request = await Request.findById(req.params.id);
     if (!request) return res.status(404).json({ error: "Request not found" });
@@ -206,7 +254,7 @@ router.post("/:id/respond", verifyToken, async (req, res) => {
     const entry = request.contactedDonors.find((c) => String(c.donor) === String(donor._id));
     if (!entry) return res.status(403).json({ error: "You were not contacted for this request" });
     if (entry.status !== "Pending") {
-      return res.status(409).json({ error: `You already responded: ${entry.status}` });
+      return res.status(409).json({ error: `Already responded: ${entry.status}` });
     }
 
     entry.status = response;
@@ -226,8 +274,6 @@ router.post("/:id/respond", verifyToken, async (req, res) => {
 
 // v0.3 — the actual matching engine: compatible blood group + available +
 // ranked by real distance from the request's location (closest first).
-// Urgency doesn't re-sort this list (it's already the seeker's own request),
-// but it's echoed back so the frontend can highlight how urgent the search is.
 router.get("/:id/matches", verifyToken, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
@@ -236,22 +282,26 @@ router.get("/:id/matches", verifyToken, async (req, res) => {
 
     const { compatibleGroups, donors: matches } = await findRankedDonors(request, 50);
 
-    const ranked = matches.map((d) => ({
-      _id: d._id,
-      bloodGroup: d.bloodGroup,
-      area: d.area,
-      verified: d.verified,
-      distanceKm: Math.round((d.distanceMeters / 1000) * 10) / 10,
-      coordinates: d.location.coordinates, // [lng, lat]
-      donor: d.user,
-    }));
+    const ranked = matches.map((d) => {
+      const display = resolveDonorContact(d, d.user);
+      return {
+        _id: d._id,
+        bloodGroup: d.bloodGroup,
+        area: d.area,
+        verified: d.verified,
+        trustTier: computeTrustTier(d, d.user),
+        distanceKm: Math.round((d.distanceMeters / 1000) * 10) / 10,
+        coordinates: d.location.coordinates, // [lng, lat]
+        donor: { name: display.name, phone: display.phone, relation: display.relation },
+      };
+    });
 
     res.json({
       request: {
         bloodGroup: request.bloodGroup,
         urgency: request.urgency,
         area: request.area,
-        coordinates: request.location.coordinates, // [lng, lat]
+        coordinates: request.location.coordinates,
       },
       compatibleGroups,
       matches: ranked,
@@ -263,7 +313,7 @@ router.get("/:id/matches", verifyToken, async (req, res) => {
 });
 
 // Hospital partner account verifies a Critical request actually originated
-// from them — this is what releases it to the matching engine (v0.6).
+// from them — this is what releases it to the matching engine.
 router.patch("/:id/verify-hospital", verifyToken, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
@@ -281,7 +331,6 @@ router.patch("/:id/verify-hospital", verifyToken, async (req, res) => {
     request.hospitalVerified = true;
     await request.save();
 
-    // Now release it to the matching engine, same as a normal-urgency request.
     const { donors } = await findRankedDonors(request, MAX_DONORS_TO_CONTACT);
     if (donors.length > 0) {
       request.contactedDonors = await contactDonors(request, donors);
@@ -293,6 +342,48 @@ router.patch("/:id/verify-hospital", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to verify request" });
+  }
+});
+
+// A donor who was actually contacted for this request can flag it as fake.
+// Two independent reports auto-expires the request and throttles the
+// seeker's account from creating new ones for 48 hours (v1.2 anti-spam).
+const REPORTS_TO_EXPIRE = 2;
+const THROTTLE_HOURS = 48;
+
+router.post("/:id/report", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!user || user.role !== "donor") {
+      return res.status(403).json({ error: "Only donors can report a request" });
+    }
+
+    const donor = await Donor.findOne({ user: user._id });
+    if (!donor) return res.status(404).json({ error: "No donor profile found" });
+
+    const request = await Request.findById(req.params.id);
+    if (!request) return res.status(404).json({ error: "Request not found" });
+
+    const wasContacted = request.contactedDonors.some((c) => String(c.donor) === String(donor._id));
+    if (!wasContacted) return res.status(403).json({ error: "You were not contacted for this request" });
+
+    if (!request.reportedBy.some((id) => String(id) === String(donor._id))) {
+      request.reportedBy.push(donor._id);
+    }
+
+    if (request.reportedBy.length >= REPORTS_TO_EXPIRE && !request.reportedFake) {
+      request.reportedFake = true;
+      request.status = "Expired";
+      await User.findByIdAndUpdate(request.seeker, {
+        throttledUntil: new Date(Date.now() + THROTTLE_HOURS * 60 * 60 * 1000),
+      });
+    }
+
+    await request.save();
+    res.json({ request, reportCount: request.reportedBy.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to report request" });
   }
 });
 

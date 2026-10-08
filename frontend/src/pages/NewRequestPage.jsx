@@ -1,18 +1,25 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { HeartHandshake } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { HeartHandshake, Siren } from "lucide-react";
 import { api } from "../api";
 import { getCurrentLocation } from "../geolocation";
+import { useAuth } from "../context/AuthContext";
+import VoiceInputButton from "../components/VoiceInputButton";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const URGENCY_LEVELS = ["Normal", "Urgent", "Critical"];
 
 export default function NewRequestPage() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const [searchParams] = useSearchParams();
+  const isSos = searchParams.get("sos") === "1";
+  const familyMembers = profile?.user?.familyMembers || [];
   const [form, setForm] = useState({
+    familyMemberId: "",
     bloodGroup: "O+",
     units: 1,
-    urgency: "Normal",
+    urgency: isSos ? "Urgent" : "Normal",
     hospital: "",
     area: "",
     lat: "",
@@ -21,6 +28,16 @@ export default function NewRequestPage() {
   });
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // SOS mode: immediately grab location so there's one less step between
+  // opening the form and submitting.
+  useEffect(() => {
+    if (isSos) {
+      getCurrentLocation()
+        .then(({ lat, lng }) => setForm((f) => ({ ...f, lat, lng })))
+        .catch(() => {});
+    }
+  }, [isSos]);
 
   async function handleUseLocation() {
     try {
@@ -54,12 +71,40 @@ export default function NewRequestPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>New request</h1>
-        <p>Fill in the details below — we'll find the best matching donors for you.</p>
+        <h1>{isSos && <Siren size={22} style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }} />}New request</h1>
+        <p>
+          {isSos
+            ? "SOS mode — urgency and your location are pre-filled. Just add the essentials and submit."
+            : "Fill in the details below — we'll find the best matching donors for you."}
+        </p>
       </div>
 
       <div className="two-col">
         <form onSubmit={handleSubmit} className="card">
+          {familyMembers.length > 0 && (
+            <>
+              <label>Who needs blood?</label>
+              <select
+                value={form.familyMemberId}
+                onChange={(e) => {
+                  const fm = familyMembers.find((m) => m._id === e.target.value);
+                  setForm({
+                    ...form,
+                    familyMemberId: e.target.value,
+                    bloodGroup: fm?.bloodGroup || form.bloodGroup,
+                  });
+                }}
+              >
+                <option value="">Myself</option>
+                {familyMembers.map((m) => (
+                  <option key={m._id} value={m._id}>
+                    {m.name} {m.relation ? `(${m.relation})` : ""}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+
           <label>Blood group required</label>
           <select value={form.bloodGroup} onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}>
             {BLOOD_GROUPS.map((bg) => (
@@ -78,10 +123,26 @@ export default function NewRequestPage() {
           />
 
           <label>Hospital</label>
-          <input value={form.hospital} onChange={(e) => setForm({ ...form, hospital: e.target.value })} required />
+          <div className="location-row">
+            <input
+              value={form.hospital}
+              onChange={(e) => setForm({ ...form, hospital: e.target.value })}
+              style={{ flex: 1 }}
+              required
+            />
+            <VoiceInputButton onResult={(text) => setForm({ ...form, hospital: text })} />
+          </div>
 
           <label>Area</label>
-          <input value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} required />
+          <div className="location-row">
+            <input
+              value={form.area}
+              onChange={(e) => setForm({ ...form, area: e.target.value })}
+              style={{ flex: 1 }}
+              required
+            />
+            <VoiceInputButton onResult={(text) => setForm({ ...form, area: text })} />
+          </div>
 
           <label>Location</label>
           <div className="location-row">

@@ -297,7 +297,8 @@ form button { margin-top: 18px; width: 100%; justify-content: center; }
 
 .loading { text-align: center; padding: 64px; color: var(--text-soft); }
 .empty-state { text-align: center; padding: 48px 20px; color: var(--text-soft); }
-.empty-state .emoji { font-size: 2.2rem; margin-bottom: 10px; }
+.empty-state .emoji { margin-bottom: 10px; display: flex; justify-content: center; }
+.empty-icon { color: var(--border); margin-bottom: 10px; }
 .empty-note { border: 1px dashed var(--border); border-radius: 12px; padding: 16px; color: var(--text-soft); font-size: 0.88rem; text-align: center; }
 
 /* ---------- Landing page ---------- */
@@ -321,6 +322,57 @@ form button { margin-top: 18px; width: 100%; justify-content: center; }
   display: flex; align-items: center; justify-content: center; font-size: 5rem;
 }
 
+/* ---------- Landing: extended sections ---------- */
+.landing-section { padding: 64px 32px; }
+.landing-section.alt { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.section-inner { max-width: 1040px; margin: 0 auto; }
+.section-kicker { color: var(--primary); font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+.section-inner h2 { font-size: clamp(1.5rem, 3vw, 2rem); max-width: 26ch; margin-bottom: 36px; }
+.section-foot { max-width: 68ch; color: var(--text-soft); margin-top: 28px; font-size: 0.95rem; }
+
+.problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.problem-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+.problem-icon { color: var(--primary); margin-bottom: 10px; }
+.problem-num { font-size: 1.9rem; font-weight: 800; margin-bottom: 6px; }
+.problem-card p { color: var(--text-soft); font-size: 0.88rem; margin: 0; }
+
+.steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.how-step { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.how-step:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(230,54,74,0.08); }
+.how-step-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--primary-soft); color: var(--primary); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.how-step p { color: var(--text-soft); font-size: 0.86rem; margin-top: 6px; }
+
+.compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.compare-card { border: 1px solid var(--border); border-radius: 16px; padding: 22px; background: var(--surface); }
+.compare-card.highlight { border-color: var(--primary); background: var(--primary-soft); }
+.compare-card strong { display: block; margin: 10px 0 6px; font-size: 1rem; }
+.compare-card p { color: var(--text-soft); font-size: 0.88rem; margin: 0; }
+.compare-card.highlight p { color: var(--primary-dark); }
+
+.landing-footer {
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  padding: 24px 32px; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-soft);
+}
+
+/* ---------- General polish: hover/transitions ---------- */
+button, .btn-primary, .btn-outline { transition: background 0.15s ease, transform 0.1s ease; }
+button:active { transform: scale(0.98); }
+.card { transition: box-shadow 0.15s ease; }
+.list-row, .donor-card { transition: background 0.12s ease; border-radius: 10px; }
+a.list-row:hover, .donor-card:hover { background: var(--bg); }
+.sidebar-link { transition: background 0.12s ease, color 0.12s ease; }
+
+/* ---------- Loading skeleton ---------- */
+.skeleton-row { height: 54px; border-radius: 10px; background: linear-gradient(90deg, var(--border) 25%, #f3f1ee 37%, var(--border) 63%); background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; margin-bottom: 10px; }
+@keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+/* ---------- Mobile sidebar toggle ---------- */
+.mobile-menu-btn { display: none; }
+@media (max-width: 680px) {
+  .mobile-menu-btn { display: flex; }
+  .sidebar.open { display: flex; position: fixed; inset: 0 30% 0 0; z-index: 50; box-shadow: 4px 0 24px rgba(0,0,0,0.15); }
+}
+
 @media (max-width: 900px) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .two-col { grid-template-columns: 1fr; }
@@ -330,4 +382,6 @@ form button { margin-top: 18px; width: 100%; justify-content: center; }
   .sidebar { display: none; }
   .content { padding: 20px 16px 48px; }
   .stat-grid { grid-template-columns: 1fr; }
+  .problem-grid, .steps-grid, .compare-row { grid-template-columns: 1fr; }
+  .landing-section { padding: 44px 20px; }
 }

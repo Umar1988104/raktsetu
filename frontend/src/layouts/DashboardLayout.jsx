@@ -1,11 +1,17 @@
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, PlusCircle, ClipboardList, Users, Bell, UserRound, LogOut, Droplet, ShieldCheck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-dom";
+import { LayoutDashboard, PlusCircle, ClipboardList, Users, Bell, UserRound, LogOut, Droplet, ShieldCheck, Menu, X, Siren, Tent } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function DashboardLayout() {
   const { firebaseUser, profile, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const role = profile?.user?.role;
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close the mobile sidebar automatically whenever the route changes.
+  useEffect(() => setMobileOpen(false), [location.pathname]);
 
   async function handleLogout() {
     await logout();
@@ -21,7 +27,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
+      <aside className={`sidebar ${mobileOpen ? "open" : ""}`}>
         <div className="sidebar-brand">
           <span className="mark">
             <Droplet size={16} fill="currentColor" />
@@ -36,6 +42,13 @@ export default function DashboardLayout() {
 
           {role === "seeker" && (
             <>
+              <NavLink
+                to="/requests/new?sos=1"
+                className="sidebar-link"
+                style={{ background: "var(--primary)", color: "#fff", fontWeight: 700, marginBottom: 4 }}
+              >
+                <Siren size={18} /> SOS — Request Now
+              </NavLink>
               <NavLink to="/requests/new" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>
                 <PlusCircle size={18} /> New Request
               </NavLink>
@@ -54,6 +67,10 @@ export default function DashboardLayout() {
             </NavLink>
           )}
 
+          <NavLink to="/camps" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>
+            <Tent size={18} /> Donation Camps
+          </NavLink>
+
           {role !== "hospital" && (
             <NavLink to="/notifications" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>
               <Bell size={18} /> Notifications
@@ -68,15 +85,21 @@ export default function DashboardLayout() {
           <button className="ghost" style={{ width: "100%", justifyContent: "center" }} onClick={handleLogout}>
             <LogOut size={16} /> Log out
           </button>
+          <Link
+            to="/privacy"
+            style={{ display: "block", textAlign: "center", fontSize: "0.78rem", marginTop: 10, color: "var(--text-soft)" }}
+          >
+            Privacy Policy
+          </Link>
         </div>
       </aside>
 
       <div className="main-area">
         <header className="topbar">
-          <button className="icon-btn">
-            <Bell size={18} />
-            <span className="dot" />
+          <button className="icon-btn mobile-menu-btn" onClick={() => setMobileOpen((v) => !v)}>
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
+          <div style={{ flex: 1 }} />
           <div className="avatar">{initials}</div>
         </header>
         <main className="content">

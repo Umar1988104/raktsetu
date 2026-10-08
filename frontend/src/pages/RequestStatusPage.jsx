@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Skeleton from "../components/Skeleton";
 import { useParams } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
@@ -6,8 +7,10 @@ import "leaflet/dist/leaflet.css";
 import { Check } from "lucide-react";
 import { api } from "../api";
 import { UrgencyPill } from "../components/StatusPill";
+import ReadAloudButton from "../components/ReadAloudButton";
 
 const STAGES = ["Searching", "Contacted", "Confirmed", "Fulfilled"];
+const TIER_CLASS = { New: "pill-expired", Trusted: "pill-confirmed", Pillar: "pill-verified" };
 const STAGE_LABELS = {
   Searching: "Searching Donors",
   Contacted: "Contacting Donors",
@@ -59,18 +62,26 @@ export default function RequestStatusPage() {
   }
 
   if (error) return <p className="error">{error}</p>;
-  if (!request) return <p className="loading">Loading...</p>;
+  if (!request) return <Skeleton rows={3} />;
 
   const currentIndex = STAGES.indexOf(request.status);
   const isExpired = request.status === "Expired";
 
   return (
     <div>
-      <div className="page-header">
-        <h1>
-          {request.bloodGroup} · {request.units} unit(s)
-        </h1>
-        <p>Track the status of your blood request in real time.</p>
+      <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+        <div>
+          <h1>
+            {request.bloodGroup} · {request.units} unit(s)
+          </h1>
+          <p>
+            Track the status of your blood request in real time.
+            {request.patientName && <> For {request.patientName}.</>}
+          </p>
+        </div>
+        <ReadAloudButton
+          text={`${request.bloodGroup}, ${request.units} units, ${request.urgency} urgency, at ${request.hospital}. Current status: ${request.status}.${request.patientName ? ` For ${request.patientName}.` : ""}`}
+        />
       </div>
 
       {request.urgency === "Critical" && !request.hospitalVerified && request.status === "Searching" && (
@@ -143,7 +154,7 @@ export default function RequestStatusPage() {
         <div className="card">
           <h3>Nearby compatible donors</h3>
           {!matchData ? (
-            <p className="loading">Searching...</p>
+            <Skeleton rows={2} />
           ) : matchData.matches.length === 0 ? (
             <p className="empty-note">No available, compatible donors found nearby yet.</p>
           ) : (
@@ -167,7 +178,8 @@ export default function RequestStatusPage() {
                   {matchData.matches.map((m, i) => (
                     <Marker key={m._id} position={[m.coordinates[1], m.coordinates[0]]} icon={pinIcon("#2F80ED", i + 1)}>
                       <Popup>
-                        {m.donor?.name} · {m.bloodGroup} · {m.distanceKm} km
+                        {m.donor?.name}
+                        {m.donor?.relation && ` (${m.donor.relation})`} · {m.bloodGroup} · {m.distanceKm} km
                       </Popup>
                     </Marker>
                   ))}
@@ -177,7 +189,10 @@ export default function RequestStatusPage() {
                 {matchData.matches.map((m, i) => (
                   <li key={m._id}>
                     <span>
-                      #{i + 1} {m.donor?.name} · {m.bloodGroup}
+                      #{i + 1} {m.donor?.name}
+                      {m.donor?.relation && ` (${m.donor.relation})`} · {m.bloodGroup}
+                      {m.verified && <span className="pill pill-verified" style={{ marginLeft: 6 }}>Verified</span>}
+                      {m.trustTier && <span className={`pill ${TIER_CLASS[m.trustTier] || "pill-expired"}`} style={{ marginLeft: 6 }}>{m.trustTier}</span>}
                     </span>
                     <span className="match-distance">{m.distanceKm} km</span>
                   </li>

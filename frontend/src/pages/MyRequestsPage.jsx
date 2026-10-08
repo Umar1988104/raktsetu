@@ -3,19 +3,20 @@ import { Link } from "react-router-dom";
 import { Droplet, ChevronRight } from "lucide-react";
 import { api } from "../api";
 import StatusPill from "../components/StatusPill";
+import Skeleton from "../components/Skeleton";
 
 export default function MyRequestsPage() {
-  const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState(null);
   const [tab, setTab] = useState("active");
 
   useEffect(() => {
     api
       .get("/api/requests/me")
       .then((d) => setRequests(d.requests))
-      .catch(() => {});
+      .catch(() => setRequests([]));
   }, []);
 
-  const filtered = requests.filter((r) =>
+  const filtered = (requests || []).filter((r) =>
     tab === "active" ? !["Fulfilled", "Expired"].includes(r.status) : ["Fulfilled", "Expired"].includes(r.status)
   );
 
@@ -36,9 +37,11 @@ export default function MyRequestsPage() {
       </div>
 
       <div className="card">
-        {filtered.length === 0 ? (
+        {requests === null ? (
+          <Skeleton rows={3} />
+        ) : filtered.length === 0 ? (
           <div className="empty-state">
-            <div className="emoji">🩸</div>
+            <Droplet size={26} className="empty-icon" />
             <p>No {tab === "active" ? "active" : "past"} requests.</p>
           </div>
         ) : (

@@ -38,6 +38,8 @@ export default function Dashboard() {
         <p>Here's what's happening across RaktSetu right now.</p>
       </div>
 
+      <RecurringCareReminders familyMembers={profile?.user?.familyMembers} />
+
       <div className="stat-grid">
         {role === "seeker" ? (
           <>
@@ -63,7 +65,7 @@ export default function Dashboard() {
               <h3>Recent requests</h3>
               {requests.length === 0 ? (
                 <div className="empty-state">
-                  <div className="emoji">🩸</div>
+                  <Droplet size={26} className="empty-icon" />
                   <p>No requests yet.</p>
                   <Link to="/requests/new" className="btn-primary" style={{ marginTop: 10 }}>
                     Create your first request
@@ -123,6 +125,33 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function RecurringCareReminders({ familyMembers }) {
+  const due = (familyMembers || [])
+    .filter((m) => m.recurringCare?.conditionName && m.recurringCare?.lastTransfusionDate && m.recurringCare?.intervalDays)
+    .map((m) => {
+      const nextDue = new Date(m.recurringCare.lastTransfusionDate);
+      nextDue.setDate(nextDue.getDate() + m.recurringCare.intervalDays);
+      return { member: m, nextDue };
+    })
+    .filter((d) => d.nextDue <= new Date());
+
+  if (due.length === 0) return null;
+
+  return (
+    <div className="availability-card" style={{ marginBottom: 20 }}>
+      <span>
+        <strong>
+          {due.map((d) => d.member.name).join(", ")}
+        </strong>{" "}
+        {due.length === 1 ? "is" : "are"} due for a transfusion.
+      </span>
+      <Link to="/requests/new">
+        <button>Create request</button>
+      </Link>
     </div>
   );
 }
