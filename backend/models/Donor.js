@@ -18,6 +18,9 @@ const donorSchema = new mongoose.Schema(
       type: { type: String, enum: ["Point"], default: "Point" },
       coordinates: { type: [Number], required: true }, // [lng, lat]
     },
+    // Used ONLY to apply the correct safe gap between donations (men: 3 months,
+    // women: 4 months). Optional — blank falls back to the longer, safer gap.
+    sex: { type: String, enum: ["male", "female"], default: null },
     available: { type: Boolean, default: true },
     verified: { type: Boolean, default: false },
     fcmTokens: [{ type: String }], // registered browser push tokens, if push is set up

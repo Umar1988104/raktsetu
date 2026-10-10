@@ -7,12 +7,16 @@ import { api } from "../api";
 import { getCurrentLocation } from "../geolocation";
 import { useAuth } from "../context/AuthContext";
 import VoiceInputButton from "../components/VoiceInputButton";
+import EmergencyCallButtons from "../components/EmergencyCallButtons";
+import LanguageToggle from "../components/LanguageToggle";
+import { useLang } from "../i18n";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 export default function EmergencyRequestPage() {
   const navigate = useNavigate();
   const { refreshProfile } = useAuth();
+  const { t } = useLang();
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -68,21 +72,26 @@ export default function EmergencyRequestPage() {
   return (
     <div className="auth-shell" style={{ alignItems: "flex-start", paddingTop: 40 }}>
       <div className="auth-card" style={{ maxWidth: 520 }}>
-        <Link to="/" className="sidebar-brand" style={{ padding: 0, marginBottom: 18 }}>
-          <span className="mark">
-            <Droplet size={16} fill="currentColor" />
-          </span>
-          RaktSetu
-        </Link>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+          <Link to="/" className="sidebar-brand" style={{ padding: 0 }}>
+            <span className="mark">
+              <Droplet size={16} fill="currentColor" />
+            </span>
+            RaktSetu
+          </Link>
+          <LanguageToggle />
+        </div>
 
-        <h2>Emergency blood request</h2>
+        <EmergencyCallButtons />
+
+        <h2>{t("Emergency blood request")}</h2>
         <p style={{ color: "var(--text-soft)", fontSize: "0.9rem", marginTop: -8, marginBottom: 10 }}>
           <ShieldAlert size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />
-          No account needed. Limited to one request per 24 hours from this network to prevent misuse.
+          {t("No account needed. Limited to one request per 24 hours from this network to prevent misuse.")}
         </p>
 
         <form onSubmit={handleSubmit}>
-          <label>Your name</label>
+          <label>{t("Your name")}</label>
           <div className="location-row">
             <input
               value={form.name}
@@ -93,7 +102,7 @@ export default function EmergencyRequestPage() {
             <VoiceInputButton onResult={(text) => setForm({ ...form, name: text })} />
           </div>
 
-          <label>Your phone</label>
+          <label>{t("Your phone")}</label>
           <input
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })}
@@ -101,7 +110,7 @@ export default function EmergencyRequestPage() {
             required
           />
 
-          <label>Blood group needed</label>
+          <label>{t("Blood group needed")}</label>
           <select value={form.bloodGroup} onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}>
             {BLOOD_GROUPS.map((bg) => (
               <option key={bg} value={bg}>
@@ -110,7 +119,7 @@ export default function EmergencyRequestPage() {
             ))}
           </select>
 
-          <label>Units needed</label>
+          <label>{t("Units needed")}</label>
           <input
             type="number"
             min={1}
@@ -118,7 +127,7 @@ export default function EmergencyRequestPage() {
             onChange={(e) => setForm({ ...form, units: Number(e.target.value) })}
           />
 
-          <label>Urgency</label>
+          <label>{t("Urgency")}</label>
           <div style={{ display: "flex", gap: 8 }}>
             {["Normal", "Urgent"].map((u) => (
               <button
@@ -128,17 +137,16 @@ export default function EmergencyRequestPage() {
                 onClick={() => setForm({ ...form, urgency: u })}
                 style={{ flex: 1, justifyContent: "center" }}
               >
-                {u}
+                {t(u)}
               </button>
             ))}
           </div>
           <p style={{ fontSize: "0.78rem", color: "var(--text-soft)", marginTop: 6 }}>
-            Critical-urgency requests need hospital verification and aren't available in the quick
-            guest flow —{" "}
-            <Link to="/signup">create a full account</Link> if this is Critical.
+            {t("Critical-urgency requests need hospital verification and aren't available in the quick guest flow —")}{" "}
+            <Link to="/signup">{t("create a full account")}</Link> {t("if this is Critical.")}
           </p>
 
-          <label>Hospital</label>
+          <label>{t("Hospital")}</label>
           <div className="location-row">
             <input
               value={form.hospital}
@@ -149,7 +157,7 @@ export default function EmergencyRequestPage() {
             <VoiceInputButton onResult={(text) => setForm({ ...form, hospital: text })} />
           </div>
 
-          <label>Area</label>
+          <label>{t("Area")}</label>
           <div className="location-row">
             <input
               value={form.area}
@@ -160,23 +168,23 @@ export default function EmergencyRequestPage() {
             <VoiceInputButton onResult={(text) => setForm({ ...form, area: text })} />
           </div>
 
-          <label>Location</label>
+          <label>{t("Location")}</label>
           <div className="location-row">
             <input placeholder="Latitude" value={form.lat} onChange={(e) => setForm({ ...form, lat: e.target.value })} required />
             <input placeholder="Longitude" value={form.lng} onChange={(e) => setForm({ ...form, lng: e.target.value })} required />
             <button type="button" className="ghost" onClick={handleUseLocation}>
-              Use current location
+              {t("Use current location")}
             </button>
           </div>
 
           {error && <p className="error">{error}</p>}
           <button type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center", marginTop: 16 }}>
-            {busy ? "Submitting..." : "Submit emergency request"}
+            {busy ? t("Submitting...") : t("Submit emergency request")}
           </button>
         </form>
 
         <p style={{ marginTop: 14, fontSize: "0.85rem", textAlign: "center" }}>
-          Have an account? <Link to="/login">Log in</Link> instead for full features.
+          {t("Have an account?")} <Link to="/login">{t("Log in")}</Link> {t("instead for full features.")}
         </p>
       </div>
     </div>

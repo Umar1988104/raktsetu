@@ -5,6 +5,8 @@ import { api } from "../api";
 import { getCurrentLocation } from "../geolocation";
 import { useAuth } from "../context/AuthContext";
 import VoiceInputButton from "../components/VoiceInputButton";
+import EmergencyCallButtons from "../components/EmergencyCallButtons";
+import { useLang } from "../i18n";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const URGENCY_LEVELS = ["Normal", "Urgent", "Critical"];
@@ -12,6 +14,7 @@ const URGENCY_LEVELS = ["Normal", "Urgent", "Critical"];
 export default function NewRequestPage() {
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const { t } = useLang();
   const [searchParams] = useSearchParams();
   const isSos = searchParams.get("sos") === "1";
   const familyMembers = profile?.user?.familyMembers || [];
@@ -71,19 +74,21 @@ export default function NewRequestPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>{isSos && <Siren size={22} style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }} />}New request</h1>
+        <h1>{isSos && <Siren size={22} style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }} />}{t("New request")}</h1>
         <p>
           {isSos
-            ? "SOS mode — urgency and your location are pre-filled. Just add the essentials and submit."
-            : "Fill in the details below — we'll find the best matching donors for you."}
+            ? t("SOS mode — urgency and your location are pre-filled. Just add the essentials and submit.")
+            : t("Fill in the details below — we'll find the best matching donors for you.")}
         </p>
       </div>
+
+      {isSos && <EmergencyCallButtons />}
 
       <div className="two-col">
         <form onSubmit={handleSubmit} className="card">
           {familyMembers.length > 0 && (
             <>
-              <label>Who needs blood?</label>
+              <label>{t("Who needs blood?")}</label>
               <select
                 value={form.familyMemberId}
                 onChange={(e) => {
@@ -95,7 +100,7 @@ export default function NewRequestPage() {
                   });
                 }}
               >
-                <option value="">Myself</option>
+                <option value="">{t("Myself")}</option>
                 {familyMembers.map((m) => (
                   <option key={m._id} value={m._id}>
                     {m.name} {m.relation ? `(${m.relation})` : ""}
@@ -105,7 +110,7 @@ export default function NewRequestPage() {
             </>
           )}
 
-          <label>Blood group required</label>
+          <label>{t("Blood group required")}</label>
           <select value={form.bloodGroup} onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}>
             {BLOOD_GROUPS.map((bg) => (
               <option key={bg} value={bg}>
@@ -114,7 +119,7 @@ export default function NewRequestPage() {
             ))}
           </select>
 
-          <label>Units required</label>
+          <label>{t("Units required")}</label>
           <input
             type="number"
             min={1}
@@ -122,7 +127,7 @@ export default function NewRequestPage() {
             onChange={(e) => setForm({ ...form, units: Number(e.target.value) })}
           />
 
-          <label>Hospital</label>
+          <label>{t("Hospital")}</label>
           <div className="location-row">
             <input
               value={form.hospital}
@@ -133,7 +138,7 @@ export default function NewRequestPage() {
             <VoiceInputButton onResult={(text) => setForm({ ...form, hospital: text })} />
           </div>
 
-          <label>Area</label>
+          <label>{t("Area")}</label>
           <div className="location-row">
             <input
               value={form.area}
@@ -144,7 +149,7 @@ export default function NewRequestPage() {
             <VoiceInputButton onResult={(text) => setForm({ ...form, area: text })} />
           </div>
 
-          <label>Location</label>
+          <label>{t("Location")}</label>
           <div className="location-row">
             <input
               placeholder="Latitude"
@@ -159,11 +164,11 @@ export default function NewRequestPage() {
               required
             />
             <button type="button" className="ghost" onClick={handleUseLocation}>
-              Use current location
+              {t("Use current location")}
             </button>
           </div>
 
-          <label>Urgency level</label>
+          <label>{t("Urgency level")}</label>
           <div style={{ display: "flex", gap: 8 }}>
             {URGENCY_LEVELS.map((u) => (
               <button
@@ -173,7 +178,7 @@ export default function NewRequestPage() {
                 onClick={() => setForm({ ...form, urgency: u })}
                 style={{ flex: 1, justifyContent: "center" }}
               >
-                {u}
+                {t(u)}
               </button>
             ))}
           </div>
@@ -186,7 +191,7 @@ export default function NewRequestPage() {
             </p>
           )}
 
-          <label>Notes (optional)</label>
+          <label>{t("Notes (optional)")}</label>
           <textarea
             rows={3}
             value={form.notes}
@@ -196,7 +201,7 @@ export default function NewRequestPage() {
 
           {status && <p className="error">{status}</p>}
           <button type="submit" disabled={busy}>
-            {busy ? "Submitting..." : "Submit request"}
+            {busy ? t("Submitting...") : t("Submit request")}
           </button>
         </form>
 

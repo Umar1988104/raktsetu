@@ -30,6 +30,15 @@ const requestSchema = new mongoose.Schema(
     creatorIp: { type: String }, // used for guest-account rate limiting (v1.2)
     reportedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "Donor" }], // donors who flagged this as fake
     reportedFake: { type: Boolean, default: false },
+    // Random token for the public, read-only tracking link a seeker can share
+    // (e.g. to a family WhatsApp group). Generated lazily when they first share.
+    shareToken: { type: String, index: true, sparse: true },
+    // One private thank-you note from the seeker to everyone who accepted,
+    // sent after the request is fulfilled. No contact details change hands.
+    thankYouNote: {
+      message: { type: String, trim: true, maxlength: 300 },
+      sentAt: { type: Date },
+    },
     // Donors this request was auto-matched and notified to, with their individual response.
     contactedDonors: [
       {

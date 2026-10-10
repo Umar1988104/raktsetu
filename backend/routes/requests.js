@@ -1,4 +1,5 @@
 const express = require("express");
+const crypto = require("crypto");
 const User = require("../models/User");
 const Request = require("../models/Request");
 const Donor = require("../models/Donor");
@@ -149,6 +150,51 @@ router.get("/me", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch your requests" });
+  }
+});
+
+// Public, read-only tracking view (v1.4) for a request's share link — what a
+// seeker pastes into a family WhatsApp group so everyone sees the same live
+// status instead of asking "any update?". Deliberately minimal: no phone
+// numbers, no donor identities, no patient name, no account details.
+router.get("/public/:token", async (req, res) => {
+  try {
+    const request = await Request.findOne({ shareToken: req.params.token });
+    if (!request) return res.status(404).json({ error: "This tracking link isn't valid" });
+
+    res.json({
+      bloodGroup: request.bloodGroup,
+      units: request.units,
+      urgency: request.urgency,
+      hospital: request.hospital,
+      area: request.area,
+      status: request.status,
+      awaitingHospitalVerification: request.urgency === "Critical" && !request.hospitalVerified,
+      donorsContacted: request.contactedDonors.length,
+      donorsAccepted: request.contactedDonors.filter((c) => c.status === "Accepted").length,
+      updatedAt: request.updatedAt,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load tracking info" });
+  }
+});
+
+// Seeker generates (or fetches the existing) share token for their request.
+router.post("/:id/share", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    const request = await Request.findOne({ _id: req.params.id, seeker: user._id });
+    if (!request) return res.status(404).json({ error: "Request not found" });
+
+    if (!request.shareToken) {
+      request.shareToken = crypto.randomBytes(12).toString("hex");
+      await request.save();
+    }
+    res.json({ token: request.shareToken });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create share link" });
   }
 });
 
@@ -342,6 +388,38 @@ router.patch("/:id/verify-hospital", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to verify request" });
+  }
+});
+
+// After a request is fulfilled, the seeker can send one short private thank-you
+// note to every donor who accepted (v1.4). It shows up in those donors'
+// Notifications inbox — no phone numbers or other contact details are shared.
+router.post("/:id/thank-you", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    const request = await Request.findOne({ _id: req.params.id, seeker: user._id });
+    if (!request) return res.status(404).json({ error: "Request not found" });
+
+    if (request.status !== "Fulfilled") {
+      return res.status(400).json({ error: "You can send a thank-you once the request is marked Fulfilled" });
+    }
+    if (!request.contactedDonors.some((c) => c.status === "Accepted")) {
+      return res.status(400).json({ error: "No donor accepted this request, so there's no one to thank" });
+    }
+    if (request.thankYouNote?.sentAt) {
+      return res.status(409).json({ error: "You've already sent a thank-you for this request" });
+    }
+
+    const message = (req.body.message || "").trim();
+    if (!message) return res.status(400).json({ error: "Please write a short message" });
+    if (message.length > 300) return res.status(400).json({ error: "Keep it under 300 characters" });
+
+    request.thankYouNote = { message, sentAt: new Date() };
+    await request.save();
+    res.json({ request });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to send thank-you" });
   }
 });
 

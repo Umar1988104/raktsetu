@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { MapPin, Plus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
@@ -76,6 +77,8 @@ function DonorProfile() {
         <h1>Donor profile</h1>
         <p>Manage your own donor profile, or register a family member as a donor too.</p>
       </div>
+
+      <CareTip donors={donors} />
 
       <AccountInfoForm />
       <FamilyMembersSection familyMembers={familyMembers} onChange={handleFamilyChange} />
@@ -214,6 +217,16 @@ function DonorProfileCard({ donor, onSaved }) {
               Next eligible to donate: {new Date(donor.nextEligibleDate).toLocaleDateString()}
             </div>
           )}
+          {donor.donationHistory?.length > 0 && (
+            <div style={{ marginTop: 6 }}>
+              {donor.donationHistory.map((h) => (
+                <div key={h._id} className="row-sub">
+                  Donated {new Date(h.date).toLocaleDateString()} ·{" "}
+                  <Link to={`/certificate/${donor._id}/${h._id}`}>View acknowledgement</Link>
+                </div>
+              ))}
+            </div>
+          )}
           {error && <p className="error" style={{ marginTop: 6 }}>{error}</p>}
         </div>
       </div>
@@ -238,6 +251,7 @@ function DonorProfileCard({ donor, onSaved }) {
 function DonorProfileForm({ existing, familyMemberId, label, onDone, onCancel }) {
   const [form, setForm] = useState({
     bloodGroup: existing?.bloodGroup || "O+",
+    sex: existing?.sex || "",
     area: existing?.area || "",
     lat: existing?.location?.coordinates?.[1] || "",
     lng: existing?.location?.coordinates?.[0] || "",
@@ -287,6 +301,17 @@ function DonorProfileForm({ existing, familyMemberId, label, onDone, onCancel })
         ))}
       </select>
 
+      <label>Biological sex (optional)</label>
+      <select value={form.sex} onChange={(e) => setForm({ ...form, sex: e.target.value })}>
+        <option value="">Prefer not to say</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+      <p style={{ fontSize: "0.78rem", color: "var(--text-soft)", margin: "6px 0 0" }}>
+        Used only to set your safe gap between donations: 3 months for men, 4 months for women. If you
+        skip this, we use the longer 4-month gap to be safe.
+      </p>
+
       <label>Area</label>
       <input value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} required />
 
@@ -309,5 +334,24 @@ function DonorProfileForm({ existing, familyMemberId, label, onDone, onCancel })
         </button>
       </div>
     </form>
+  );
+}
+
+// Shown for 48 hours after a logged donation — a small, genuinely useful
+// aftercare note rather than just a thank-you.
+function CareTip({ donors }) {
+  const recent = (donors || []).some((d) =>
+    d.donationHistory?.some((h) => Date.now() - new Date(h.date).getTime() < 48 * 60 * 60 * 1000)
+  );
+  if (!recent) return null;
+
+  return (
+    <div className="availability-card is-available" style={{ marginBottom: 20, alignItems: "flex-start" }}>
+      <span>
+        <strong>Thank you for donating.</strong> For the next day or two: drink plenty of water, rest, eat
+        iron-rich food (spinach, dates, jaggery, lentils), and skip heavy exercise. If you feel dizzy, lie
+        down with your feet raised — and see a doctor if you feel unwell.
+      </span>
+    </div>
   );
 }

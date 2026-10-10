@@ -14,7 +14,7 @@
   --blue: #2F80ED;   --blue-soft: #EAF2FE;
   --purple: #8B5CF6; --purple-soft: #F1EBFE;
 
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: "Inter", "Noto Sans Devanagari", system-ui, -apple-system, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -384,4 +384,108 @@ a.list-row:hover, .donor-card:hover { background: var(--bg); }
   .stat-grid { grid-template-columns: 1fr; }
   .problem-grid, .steps-grid, .compare-row { grid-template-columns: 1fr; }
   .landing-section { padding: 44px 20px; }
+}
+
+/* ---------- Print (donation acknowledgement) ---------- */
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+}
+
+/* ---------- Confirm dialog + toasts ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(20, 24, 33, 0.45);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  animation: fade-in 0.15s ease;
+}
+.modal {
+  background: var(--surface); border-radius: 16px; padding: 24px;
+  width: 100%; max-width: 420px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  animation: pop-in 0.18s ease;
+}
+.modal h3 { font-size: 1.1rem; margin-bottom: 8px; }
+.modal p { color: var(--text-soft); font-size: 0.92rem; margin: 0 0 20px; line-height: 1.55; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+.toast-stack {
+  position: fixed; right: 16px; bottom: 16px; z-index: 110;
+  display: flex; flex-direction: column; gap: 8px; max-width: calc(100vw - 32px);
+}
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--text); color: #fff; padding: 11px 12px 11px 14px;
+  border-radius: 12px; font-size: 0.88rem; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: slide-in 0.2s ease;
+}
+.toast-success svg:first-child { color: #4ade80; }
+.toast-error svg:first-child { color: #fca5a5; }
+.toast-info svg:first-child { color: #93c5fd; }
+.toast .toast-close { background: transparent; padding: 2px; color: #cbd5e1; border-radius: 6px; }
+.toast .toast-close:hover { background: rgba(255, 255, 255, 0.12); }
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes slide-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Dashboard: live strip, quick actions, tip ---------- */
+.live-strip {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 12px 16px; margin-bottom: 20px; font-size: 0.88rem;
+}
+.live-dot {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5); animation: live-pulse 1.8s infinite;
+  display: inline-block; margin-right: 6px;
+}
+.live-strip .live-label { font-weight: 700; display: flex; align-items: center; }
+.live-strip .live-item strong { font-size: 1.05rem; margin-right: 4px; }
+.live-strip .live-item.critical strong { color: var(--primary); }
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45); }
+  70% { box-shadow: 0 0 0 8px rgba(22, 163, 74, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+.section-title { font-size: 0.82rem; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; margin: 4px 0 12px; }
+
+.quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.quick-tile {
+  display: flex; flex-direction: column; gap: 4px; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.quick-tile:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07); border-color: var(--primary); }
+.quick-tile .quick-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+.quick-tile strong { font-size: 0.95rem; }
+.quick-tile span { font-size: 0.8rem; color: var(--text-soft); }
+.quick-tile.emphasis { background: var(--primary); border-color: var(--primary); color: #fff; }
+.quick-tile.emphasis span { color: rgba(255, 255, 255, 0.85); }
+.quick-tile.emphasis .quick-icon { background: rgba(255, 255, 255, 0.2); color: #fff; }
+
+.tip-card {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: linear-gradient(135deg, var(--blue-soft), var(--purple-soft));
+  border-radius: 16px; padding: 18px 20px; margin-bottom: 20px;
+}
+.tip-card .tip-icon { width: 38px; height: 38px; border-radius: 10px; background: #fff; color: var(--purple); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tip-card p { margin: 0; font-size: 0.92rem; }
+.tip-card .tip-note { font-size: 0.74rem; color: var(--text-soft); margin-top: 6px; }
+
+/* Scoped to top-level entries (>) so nested bullet lists don't get a dot too. */
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline > li { position: relative; padding: 0 0 18px 22px; border-left: 2px solid var(--border); margin-left: 6px; }
+.timeline > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.timeline > li::before { content: ""; position: absolute; left: -7px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); border: 2px solid var(--surface); }
+.timeline .tl-version { font-weight: 700; font-size: 0.9rem; }
+.timeline .tl-title { font-size: 0.9rem; margin-left: 6px; color: var(--text-soft); }
+.timeline ul { margin: 6px 0 0; padding-left: 18px; font-size: 0.85rem; color: var(--text-soft); }
+
+@media (max-width: 900px) { .quick-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .quick-grid { grid-template-columns: 1fr; } }
+
+/* Respect users who ask their system for less motion (this project cares about accessibility). */
+@media (prefers-reduced-motion: reduce) {
+  .live-dot, .modal, .modal-overlay, .toast, .quick-tile, .how-step { animation: none !important; transition: none !important; }
 }

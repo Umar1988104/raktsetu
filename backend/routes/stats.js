@@ -9,7 +9,8 @@ const router = express.Router();
 // stat cards. No fabricated numbers; whatever isn't true yet just reads 0.
 router.get("/", async (req, res) => {
   try {
-    const [totalDonors, availableDonors, totalRequests, fulfilledRequests, byGroupAgg, hospitalPartners] =
+    const OPEN = ["Searching", "Contacted", "Confirmed"];
+    const [totalDonors, availableDonors, totalRequests, fulfilledRequests, byGroupAgg, hospitalPartners, openRequests, criticalOpen] =
       await Promise.all([
         Donor.countDocuments({}),
         Donor.countDocuments({ available: true }),
@@ -17,6 +18,8 @@ router.get("/", async (req, res) => {
         Request.countDocuments({ status: "Fulfilled" }),
         Donor.aggregate([{ $group: { _id: "$bloodGroup", count: { $sum: 1 } } }]),
         User.find({ role: "hospital" }).select("hospitalName").sort({ createdAt: 1 }).limit(12),
+        Request.countDocuments({ status: { $in: OPEN } }),
+        Request.countDocuments({ status: { $in: OPEN }, urgency: "Critical" }),
       ]);
 
     const byBloodGroup = Object.fromEntries(byGroupAgg.map((g) => [g._id, g.count]));
@@ -26,6 +29,8 @@ router.get("/", async (req, res) => {
       availableDonors,
       totalRequests,
       fulfilledRequests,
+      openRequests,
+      criticalOpen,
       byBloodGroup,
       hospitalPartners: { count: hospitalPartners.length, names: hospitalPartners.map((h) => h.hospitalName) },
     });

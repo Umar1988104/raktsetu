@@ -11,8 +11,11 @@ import {
   Building2,
 } from "lucide-react";
 import { api } from "../api";
+import { useLang } from "../i18n";
+import LanguageToggle from "../components/LanguageToggle";
 
 export default function Landing() {
+  const { t, lang } = useLang();
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
@@ -30,11 +33,12 @@ export default function Landing() {
         </div>
         <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
           <Link to="/emergency" style={{ color: "var(--primary)", fontWeight: 700 }}>
-            Emergency — Request Now
+            {t("Emergency — Request Now")}
           </Link>
-          <Link to="/login">Log in</Link>
+          <LanguageToggle />
+          <Link to="/login">{t("Log in")}</Link>
           <Link to="/signup" className="btn-primary">
-            Get started
+            {t("Get started")}
           </Link>
         </div>
       </nav>
@@ -43,36 +47,45 @@ export default function Landing() {
       <div className="landing-hero">
         <div>
           <h1>
-            Because every <span className="accent">drop</span> counts.
+            {lang === "hi" ? (
+              <>
+                क्योंकि हर <span className="accent">बूँद</span> मायने रखती है।
+              </>
+            ) : (
+              <>
+                Because every <span className="accent">drop</span> counts.
+              </>
+            )}
           </h1>
           <p>
-            Connect nearby compatible donors with people who need blood right now — one
-            trackable request instead of forty frantic phone calls.
+            {t(
+              "Connect nearby compatible donors with people who need blood right now — one trackable request instead of forty frantic phone calls."
+            )}
           </p>
           <div className="cta-row" style={{ marginTop: 26 }}>
             <Link to="/signup" className="btn-primary">
-              Get started
+              {t("Get started")}
             </Link>
             <Link to="/login" className="btn-outline">
-              Log in
+              {t("Log in")}
             </Link>
           </div>
           <Link to="/emergency" style={{ display: "inline-block", marginTop: 14, fontSize: "0.88rem", color: "var(--primary)", fontWeight: 600 }}>
-            Need blood right now? Request without an account →
+            {t("Need blood right now? Request without an account →")}
           </Link>
 
           <div className="landing-stats">
             <div>
               <div className="num">{stats ? stats.totalDonors : "—"}</div>
-              <div className="lbl">Registered donors</div>
+              <div className="lbl">{t("Registered donors")}</div>
             </div>
             <div>
               <div className="num">{stats ? stats.availableDonors : "—"}</div>
-              <div className="lbl">Available right now</div>
+              <div className="lbl">{t("Available right now")}</div>
             </div>
             <div>
               <div className="num">{stats ? stats.fulfilledRequests : "—"}</div>
-              <div className="lbl">Requests fulfilled</div>
+              <div className="lbl">{t("Requests fulfilled")}</div>
             </div>
           </div>
         </div>
@@ -83,8 +96,8 @@ export default function Landing() {
       {/* ---------- The problem ---------- */}
       <section className="landing-section">
         <div className="section-inner">
-          <p className="section-kicker">The problem</p>
-          <h2>Finding a donor in time shouldn't depend on luck.</h2>
+          <p className="section-kicker">{t("The problem")}</p>
+          <h2>{t("Finding a donor in time shouldn't depend on luck.")}</h2>
           <div className="problem-grid">
             <div className="problem-card">
               <Hourglass size={20} className="problem-icon" />
@@ -113,8 +126,8 @@ export default function Landing() {
       {/* ---------- How it works ---------- */}
       <section className="landing-section alt">
         <div className="section-inner">
-          <p className="section-kicker">How it works</p>
-          <h2>From request to donor, in one flow.</h2>
+          <p className="section-kicker">{t("How it works")}</p>
+          <h2>{t("From request to donor, in one flow.")}</h2>
           <div className="steps-grid">
             <HowStep icon={<Droplet size={20} />} title="Raise a request" text="Blood group, units, urgency, and hospital — takes under a minute." />
             <HowStep icon={<ActivitySquare size={20} />} title="We rank real matches" text="Compatible, available, nearby donors — ranked by actual distance, not a static directory." />
@@ -127,8 +140,8 @@ export default function Landing() {
       {/* ---------- Differentiation ---------- */}
       <section className="landing-section">
         <div className="section-inner">
-          <p className="section-kicker">Why RaktSetu</p>
-          <h2>Not another static directory.</h2>
+          <p className="section-kicker">{t("Why RaktSetu")}</p>
+          <h2>{t("Not another static directory.")}</h2>
           <div className="compare-row">
             <div className="compare-card">
               <Building2 size={18} />
@@ -148,7 +161,7 @@ export default function Landing() {
       <section className="landing-section alt">
         <div className="section-inner" style={{ textAlign: "center" }}>
           <p className="section-kicker" style={{ textAlign: "center" }}>
-            Trust
+            {t("Trust")}
           </p>
           {stats?.hospitalPartners?.count > 0 ? (
             <>
@@ -190,10 +203,11 @@ export default function Landing() {
 }
 
 function HowStep({ icon, title, text }) {
+  const { t } = useLang();
   return (
     <div className="how-step">
       <div className="how-step-icon">{icon}</div>
-      <h3 style={{ fontSize: "1rem" }}>{title}</h3>
+      <h3 style={{ fontSize: "1rem" }}>{t(title)}</h3>
       <p>{text}</p>
     </div>
   );

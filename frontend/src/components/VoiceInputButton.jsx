@@ -1,12 +1,15 @@
 import { useState, useRef } from "react";
 import { Mic, MicOff } from "lucide-react";
+import { useLang } from "../i18n";
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 // Drop this next to any text input: onResult receives the spoken text.
 // Built entirely on the browser's free, native Web Speech API — no paid
 // service, but only works in browsers that support it (mainly Chrome).
-export default function VoiceInputButton({ onResult, lang = "en-IN" }) {
+export default function VoiceInputButton({ onResult }) {
+  const { lang: uiLang } = useLang();
+  const lang = uiLang === "hi" ? "hi-IN" : "en-IN";
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef(null);
 

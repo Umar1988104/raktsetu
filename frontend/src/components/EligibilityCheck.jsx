@@ -5,7 +5,7 @@ import { ShieldAlert } from "lucide-react";
 // any of these is a real reason a blood bank would turn someone away — this
 // isn't decorative, it's meant to actually cut down wasted donor trips.
 const QUESTIONS = [
-  "Have you donated blood in the last 90 days?",
+  "Have you donated blood in the last 3 months (4 months if you are a woman)?",
   "Do you currently have a fever, cold, or infection?",
   "Have you gotten a new tattoo or piercing in the last 6 months?",
   "Are you currently pregnant or breastfeeding?",

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import Skeleton from "../components/Skeleton";
 import { Link } from "react-router-dom";
-import { Bell, Check, X, Droplet, Flag } from "lucide-react";
+import { Bell, Check, X, Droplet, Flag, Heart } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
+import { useConfirm } from "../components/UiFeedback";
 
 export default function NotificationsPage() {
   const { profile } = useAuth();
@@ -12,6 +13,7 @@ export default function NotificationsPage() {
 }
 
 function DonorInbox() {
+  const askConfirm = useConfirm();
   const [incoming, setIncoming] = useState(null);
   const [error, setError] = useState("");
   const [busyKey, setBusyKey] = useState(null);
@@ -26,7 +28,12 @@ function DonorInbox() {
   useEffect(load, []);
 
   async function reportFake(requestId) {
-    if (!confirm("Report this request as fake/spam? After 2 reports it's automatically pulled down.")) return;
+    const ok = await askConfirm({
+      title: "Report this request as fake?",
+      message: "If two different donors report it, the request is automatically taken down and the account that raised it is blocked from new requests for 48 hours.",
+      confirmLabel: "Report as fake",
+    });
+    if (!ok) return;
     try {
       await api.post(`/api/requests/${requestId}/report`, {});
       load();
@@ -93,6 +100,21 @@ function DonorInbox() {
                     {r.respondingAs !== "you" && (
                       <div className="row-sub" style={{ fontStyle: "italic" }}>
                         Responding as {r.respondingAs}
+                      </div>
+                    )}
+                    {r.thankYouNote && (
+                      <div
+                        style={{
+                          marginTop: 8,
+                          padding: "8px 12px",
+                          background: "var(--green-soft)",
+                          borderRadius: 10,
+                          fontSize: "0.85rem",
+                          color: "var(--green)",
+                        }}
+                      >
+                        <Heart size={12} style={{ verticalAlign: "middle", marginRight: 6 }} />
+                        &ldquo;{r.thankYouNote.message}&rdquo;
                       </div>
                     )}
                   </div>

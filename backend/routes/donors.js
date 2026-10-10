@@ -36,7 +36,7 @@ router.post("/", verifyToken, async (req, res) => {
       return res.status(403).json({ error: "Only accounts registered with role 'donor' can create a donor profile" });
     }
 
-    const { bloodGroup, area, lat, lng, available, familyMemberId } = req.body;
+    const { bloodGroup, area, lat, lng, available, familyMemberId, sex } = req.body;
     if (!bloodGroup || !area || lat === undefined || lng === undefined) {
       return res.status(400).json({ error: "bloodGroup, area, lat and lng are required" });
     }
@@ -52,6 +52,7 @@ router.post("/", verifyToken, async (req, res) => {
         familyMemberId: familyMemberId || null,
         bloodGroup,
         area,
+        sex: ["male", "female"].includes(sex) ? sex : null,
         location: { type: "Point", coordinates: [Number(lng), Number(lat)] },
         available: available !== undefined ? Boolean(available) : true,
       },
@@ -195,6 +196,8 @@ router.get("/me/incoming-requests", verifyToken, async (req, res) => {
           patientName: r.patientName,
           requestStatus: r.status,
           myResponse: c.status,
+          // Only donors who actually accepted get the seeker's thank-you note.
+          thankYouNote: c.status === "Accepted" && r.thankYouNote?.sentAt ? r.thankYouNote : null,
           notifiedAt: c.notifiedAt,
           seeker: r.seeker,
         });
@@ -205,6 +208,34 @@ router.get("/me/incoming-requests", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch incoming requests" });
+  }
+});
+
+// A donor's own logged donations, with where each one happened — the data
+// behind the downloadable donation acknowledgement (v1.4). Only the account
+// that owns this donor profile can read it.
+router.get("/:id/donations", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    const donor = await Donor.findOne({ _id: req.params.id, user: user._id }).populate(
+      "donationHistory.requestId",
+      "hospital bloodGroup area"
+    );
+    if (!donor) return res.status(404).json({ error: "Donor profile not found" });
+
+    const display = resolveDonorContact(donor, user);
+    const donations = donor.donationHistory.map((h) => ({
+      _id: h._id,
+      date: h.date,
+      hospital: h.requestId?.hospital || null,
+      area: h.requestId?.area || null,
+      bloodGroup: h.requestId?.bloodGroup || donor.bloodGroup,
+    }));
+
+    res.json({ donorName: display.name, donorBloodGroup: donor.bloodGroup, donations });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch donations" });
   }
 });
 

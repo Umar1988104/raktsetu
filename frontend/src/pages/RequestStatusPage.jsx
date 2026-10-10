@@ -8,6 +8,7 @@ import { Check } from "lucide-react";
 import { api } from "../api";
 import { UrgencyPill } from "../components/StatusPill";
 import ReadAloudButton from "../components/ReadAloudButton";
+import ShareRequestButton from "../components/ShareRequestButton";
 
 const STAGES = ["Searching", "Contacted", "Confirmed", "Fulfilled"];
 const TIER_CLASS = { New: "pill-expired", Trusted: "pill-confirmed", Pillar: "pill-verified" };
@@ -84,6 +85,12 @@ export default function RequestStatusPage() {
         />
       </div>
 
+      {!isExpired && (
+        <div style={{ marginBottom: 20 }}>
+          <ShareRequestButton request={request} />
+        </div>
+      )}
+
       {request.urgency === "Critical" && !request.hospitalVerified && request.status === "Searching" && (
         <div className="availability-card" style={{ marginBottom: 20 }}>
           <span>
@@ -118,6 +125,10 @@ export default function RequestStatusPage() {
             </div>
           )}
         </div>
+      )}
+
+      {request.status === "Fulfilled" && request.contactedDonors?.some((c) => c.status === "Accepted") && (
+        <ThankYouCard request={request} onSent={load} />
       )}
 
       <div className="two-col">
@@ -203,5 +214,59 @@ export default function RequestStatusPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// After fulfilment, the seeker can send one short private thank-you to the
+// donors who accepted. Closes the loop without exposing anyone's contact info.
+function ThankYouCard({ request, onSent }) {
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  if (request.thankYouNote?.sentAt) {
+    return (
+      <div className="card">
+        <h3>Thank-you sent</h3>
+        <p style={{ color: "var(--text-soft)", fontSize: "0.9rem", margin: 0 }}>
+          Your note went to the donors who accepted: &ldquo;{request.thankYouNote.message}&rdquo;
+        </p>
+      </div>
+    );
+  }
+
+  async function send(e) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      await api.post(`/api/requests/${request._id}/thank-you`, { message });
+      onSent();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={send} className="card">
+      <h3>Say thank you</h3>
+      <p style={{ color: "var(--text-soft)", fontSize: "0.88rem", marginTop: -6 }}>
+        Send one short private note to the donors who accepted. No contact details are shared either way.
+      </p>
+      <textarea
+        rows={3}
+        maxLength={300}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Thank you — your help meant the world to our family."
+        required
+      />
+      {error && <p className="error">{error}</p>}
+      <button type="submit" disabled={busy} style={{ width: "auto" }}>
+        {busy ? "Sending..." : "Send thank-you"}
+      </button>
+    </form>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { UserPlus, Trash2, Pencil, HeartPulse } from "lucide-react";
 import { api } from "../api";
+import { useConfirm } from "./UiFeedback";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const PHONE_REGEX = /^[6-9]\d{9}$/;
@@ -17,6 +18,7 @@ const BLANK = {
 };
 
 export default function FamilyMembersSection({ familyMembers, onChange }) {
+  const askConfirm = useConfirm();
   const [editing, setEditing] = useState(null); // null = closed, "new" = adding, or a member _id
   const [form, setForm] = useState(BLANK);
   const [error, setError] = useState("");
@@ -86,7 +88,12 @@ export default function FamilyMembersSection({ familyMembers, onChange }) {
   }
 
   async function remove(memberId) {
-    if (!confirm("Remove this family member? Any donor profile under their name will be removed too.")) return;
+    const ok = await askConfirm({
+      title: "Remove this family member?",
+      message: "Any donor profile registered under their name will be removed too. This can't be undone.",
+      confirmLabel: "Remove",
+    });
+    if (!ok) return;
     setBusy(true);
     setError("");
     try {
