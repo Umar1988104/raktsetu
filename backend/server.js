@@ -16,6 +16,8 @@ const donorRoutes = require("./routes/donors");
 const requestRoutes = require("./routes/requests");
 const statsRoutes = require("./routes/stats");
 const campsRoutes = require("./routes/camps");
+const adminRoutes = require("./routes/admin");
+const { backfillLifecycleFields, startMaintenanceLoop } = require("./utils/lifecycle");
 const Donor = require("./models/Donor");
 
 const app = express();
@@ -39,6 +41,7 @@ app.use("/api/donors", donorRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/camps", campsRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Fallback error handler
 app.use((err, req, res, next) => {
@@ -61,6 +64,15 @@ mongoose
     } catch (err) {
       console.error("Index sync failed (non-fatal):", err.message);
     }
+    // v1.5: give pre-existing requests an expiry time, then start the
+    // background job that times out old requests and widens stalled searches.
+    try {
+      const filled = await backfillLifecycleFields();
+      if (filled) console.log(`Backfilled expiry on ${filled} older request(s)`);
+    } catch (err) {
+      console.error("Lifecycle backfill failed (non-fatal):", err.message);
+    }
+    startMaintenanceLoop();
     app.listen(PORT, () => console.log(`RaktSetu backend running on port ${PORT}`));
   })
   .catch((err) => {

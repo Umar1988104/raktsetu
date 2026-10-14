@@ -10,6 +10,7 @@ import { api } from "../api";
 import { useLang } from "../i18n";
 import StatusPill from "../components/StatusPill";
 import AnimatedNumber from "../components/AnimatedNumber";
+import DemoNotice from "../components/DemoNotice";
 import { CHANGELOG } from "../data/changelog";
 import { TIPS } from "../data/tips";
 
@@ -242,6 +243,7 @@ function LiveStrip({ stats, t }) {
         </strong>
         {t("donors available now")}
       </span>
+      <DemoNotice show={stats.demoDataIncluded} />
     </div>
   );
 }

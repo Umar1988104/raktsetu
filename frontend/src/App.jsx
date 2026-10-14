@@ -22,6 +22,9 @@ import CampsPage from "./pages/CampsPage";
 import TrackPage from "./pages/TrackPage";
 import CertificatePage from "./pages/CertificatePage";
 import UpdatesPage from "./pages/UpdatesPage";
+import ImpactPage from "./pages/ImpactPage";
+import AdminPage from "./pages/AdminPage";
+import MaybeLayout from "./components/MaybeLayout";
 
 export default function App() {
   return (
@@ -32,7 +35,11 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/emergency" element={<EmergencyRequestPage />} />
-        <Route path="/camps" element={<CampsPage />} />
+        {/* Public pages: inside the app shell when logged in, plain page when not. */}
+        <Route element={<MaybeLayout />}>
+          <Route path="/camps" element={<CampsPage />} />
+          <Route path="/impact" element={<ImpactPage />} />
+        </Route>
         <Route path="/track/:token" element={<TrackPage />} />
         <Route
           path="/certificate/:donorId/:entryId"
@@ -68,6 +75,7 @@ export default function App() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/verify" element={<HospitalVerifyPage />} />
           <Route path="/updates" element={<UpdatesPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Routes>

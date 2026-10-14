@@ -2,6 +2,12 @@ const express = require("express");
 const Donor = require("../models/Donor");
 const Request = require("../models/Request");
 const User = require("../models/User");
+const { computeImpact, computeAreaStats } = require("../utils/impact");
+
+// True if any sample data from seed-demo.js is present — the UI must say so.
+async function hasDemoData() {
+  return !!((await Donor.exists({ isDemo: true })) || (await Request.exists({ isDemo: true })));
+}
 
 const router = express.Router();
 
@@ -23,6 +29,7 @@ router.get("/", async (req, res) => {
       ]);
 
     const byBloodGroup = Object.fromEntries(byGroupAgg.map((g) => [g._id, g.count]));
+    const demoDataIncluded = await hasDemoData();
 
     res.json({
       totalDonors,
@@ -31,12 +38,42 @@ router.get("/", async (req, res) => {
       fulfilledRequests,
       openRequests,
       criticalOpen,
+      demoDataIncluded,
       byBloodGroup,
       hospitalPartners: { count: hospitalPartners.length, names: hospitalPartners.map((h) => h.hospitalName) },
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to load stats" });
+  }
+});
+
+// Public success metrics from the project brief — aggregates only, no personal data.
+router.get("/impact", async (req, res) => {
+  try {
+    const [requests, donors, hospitalPartners, totalDonors, verifiedDonors, demoDataIncluded] = await Promise.all([
+      Request.find({})
+        .select("createdAt urgency status closedReason reportedFake contactedDonors.status contactedDonors.respondedAt")
+        .sort({ createdAt: -1 })
+        .limit(2000)
+        .lean(),
+      Donor.find({}).select("area available verified").limit(5000).lean(),
+      User.countDocuments({ role: "hospital" }),
+      Donor.countDocuments({}),
+      Donor.countDocuments({ verified: true }),
+      hasDemoData(),
+    ]);
+
+    res.json({
+      ...computeImpact(requests),
+      donorsByArea: computeAreaStats(donors),
+      totals: { donors: totalDonors, verifiedDonors, hospitalPartners },
+      demoDataIncluded,
+      generatedAt: new Date(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load impact metrics" });
   }
 });
 

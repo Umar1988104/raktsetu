@@ -128,6 +128,9 @@ const HI = {
   "Post and manage camps": "शिविर जोड़ें और संभालें",
   "Your partner details": "आपके साझेदार का विवरण",
 
+  "Impact": "प्रभाव",
+  "Admin": "एडमिन",
+
   // Logout confirmation
   "Log out of RaktSetu?": "रक्तसेतु से लॉग आउट करें?",
   "You'll need to sign in again to see your dashboard.": "अपना डैशबोर्ड देखने के लिए आपको दोबारा साइन इन करना होगा।",

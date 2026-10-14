@@ -30,6 +30,20 @@ const requestSchema = new mongoose.Schema(
     creatorIp: { type: String }, // used for guest-account rate limiting (v1.2)
     reportedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "Donor" }], // donors who flagged this as fake
     reportedFake: { type: Boolean, default: false },
+    // --- Lifecycle (v1.5) ---
+    // When an open request times out. Seeker can extend it (max 2 times).
+    expiresAt: { type: Date, index: true },
+    extensions: { type: Number, default: 0 },
+    closedReason: {
+      type: String,
+      enum: ["Timed out", "Closed by requester", "Reported as fake", "Closed by admin"],
+    },
+    closedAt: { type: Date }, // when it became Fulfilled or Expired
+    // Auto-escalation: if nobody accepts in time, the next batch of donors is
+    // notified. nextEscalationAt is null once the rounds are used up.
+    escalationRound: { type: Number, default: 0 },
+    nextEscalationAt: { type: Date, default: null, index: true },
+    isDemo: { type: Boolean, default: false, index: true }, // sample data from seed-demo.js
     // Random token for the public, read-only tracking link a seeker can share
     // (e.g. to a family WhatsApp group). Generated lazily when they first share.
     shareToken: { type: String, index: true, sparse: true },

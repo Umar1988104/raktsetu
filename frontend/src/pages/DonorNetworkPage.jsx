@@ -96,6 +96,7 @@ export default function DonorNetworkPage() {
                       {d.available ? "Available now" : "Not available"}
                     </span>
                     {d.verified && <span className="pill pill-verified">Verified</span>}
+                    {d.isDemo && <span className="pill pill-expired">Demo</span>}
                     <span className={`pill ${TIER_CLASS[d.trustTier] || "pill-expired"}`}>{d.trustTier}</span>
                   </div>
                   <div className="row-sub" style={{ marginTop: 4 }}>

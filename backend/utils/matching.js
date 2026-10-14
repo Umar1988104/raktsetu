@@ -22,7 +22,7 @@ async function findRankedDonors(request, limit = 10) {
     { $limit: limit * 3 },
   ]);
 
-  await Donor.populate(candidates, { path: "user", select: "name phone email familyMembers" });
+  await Donor.populate(candidates, { path: "user", select: "name phone email familyMembers photo address alternatePhone" });
 
   // Safety net: never contact a donor who, by their own logged donation
   // history, isn't actually past the 90-day cooldown yet — even if their

@@ -21,6 +21,7 @@ const donorSchema = new mongoose.Schema(
     // Used ONLY to apply the correct safe gap between donations (men: 3 months,
     // women: 4 months). Optional — blank falls back to the longer, safer gap.
     sex: { type: String, enum: ["male", "female"], default: null },
+    isDemo: { type: Boolean, default: false, index: true }, // sample data from seed-demo.js
     available: { type: Boolean, default: true },
     verified: { type: Boolean, default: false },
     fcmTokens: [{ type: String }], // registered browser push tokens, if push is set up

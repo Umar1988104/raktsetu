@@ -192,7 +192,7 @@ export default function Landing() {
 
       <footer className="landing-footer">
         <span>
-          RaktSetu — Team RaktSetu, SIH26198 · <Link to="/privacy">Privacy Policy</Link>
+          RaktSetu — Team RaktSetu, SIH26198 · <Link to="/privacy">Privacy Policy</Link> · <Link to="/impact">Impact</Link>
         </span>
         <span className="landing-footer-sources">
           Sources: Rajya Sabha (2025) · BMJ blood-desert study (2024)

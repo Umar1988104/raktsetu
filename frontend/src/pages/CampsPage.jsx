@@ -25,29 +25,12 @@ export default function CampsPage() {
 
   return (
     <div>
-      {!firebaseUser && (
-        <nav className="landing-nav">
-          <Link to="/" className="sidebar-brand" style={{ padding: 0 }}>
-            <span className="mark">
-              <Droplet size={16} fill="currentColor" />
-            </span>
-            RaktSetu
-          </Link>
-          <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-            <Link to="/login">Log in</Link>
-            <Link to="/signup" className="btn-primary">
-              Get started
-            </Link>
-          </div>
-        </nav>
-      )}
-
-      <div className="page-header" style={firebaseUser ? {} : { maxWidth: 760, margin: "0 auto", padding: "28px 20px 0" }}>
+      <div className="page-header">
         <h1>Donation camps</h1>
         <p>Upcoming blood donation camps — filter by accessibility if that matters for you.</p>
       </div>
 
-      <div style={firebaseUser ? {} : { maxWidth: 760, margin: "0 auto", padding: "0 20px 48px" }}>
+      <div>
 
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

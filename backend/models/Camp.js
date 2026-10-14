@@ -12,6 +12,7 @@ const campSchema = new mongoose.Schema(
       type: { type: String, enum: ["Point"], default: "Point" },
       coordinates: { type: [Number], required: true }, // [lng, lat]
     },
+    isDemo: { type: Boolean, default: false, index: true }, // sample data from seed-demo.js
     accessibility: {
       wheelchairRamp: { type: Boolean, default: false },
       groundFloor: { type: Boolean, default: false },

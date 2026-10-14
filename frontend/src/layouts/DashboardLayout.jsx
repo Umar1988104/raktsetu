@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-dom";
-import { LayoutDashboard, PlusCircle, ClipboardList, Users, Bell, UserRound, LogOut, Droplet, ShieldCheck, Menu, X, Siren, Tent, Sparkles } from "lucide-react";
+import { LayoutDashboard, PlusCircle, ClipboardList, Users, Bell, UserRound, LogOut, Droplet, ShieldCheck, Menu, X, Siren, Tent, Sparkles, BarChart3, ShieldAlert } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useLang } from "../i18n";
 import LanguageToggle from "../components/LanguageToggle";
@@ -94,6 +94,14 @@ export default function DashboardLayout() {
           <NavLink to="/updates" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>
             <Sparkles size={18} /> {t("What's new")}
           </NavLink>
+          <NavLink to="/impact" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>
+            <BarChart3 size={18} /> {t("Impact")}
+          </NavLink>
+          {profile?.isAdmin && (
+            <NavLink to="/admin" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>
+              <ShieldAlert size={18} /> {t("Admin")}
+            </NavLink>
+          )}
 
           {role !== "hospital" && (
             <NavLink to="/notifications" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>

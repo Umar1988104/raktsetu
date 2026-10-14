@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
     email: { type: String, lowercase: true, trim: true },
     phone: { type: String, required: true, trim: true, match: [PHONE_REGEX, "Phone must be a 10-digit Indian mobile number"] },
     isGuest: { type: Boolean, default: false },
+    isDemo: { type: Boolean, default: false, index: true }, // sample data from seed-demo.js
     // Set when a request of theirs was reported fake by donors — blocks new
     // requests until this time passes (v1.2 anti-spam).
     throttledUntil: { type: Date, default: null },

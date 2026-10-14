@@ -2,6 +2,7 @@ const express = require("express");
 const User = require("../models/User");
 const Donor = require("../models/Donor");
 const verifyToken = require("../middleware/verifyToken");
+const { isAdminUid } = require("../middleware/requireAdmin");
 
 const router = express.Router();
 
@@ -84,10 +85,10 @@ router.get("/me", verifyToken, async (req, res) => {
 
     let donors = [];
     if (user.role === "donor") {
-      donors = await Donor.find({ user: user._id });
+      donors = await Donor.find({ user: user._id }).select("-fcmTokens");
     }
 
-    res.json({ user, donors });
+    res.json({ user, donors, isAdmin: isAdminUid(req.user.uid) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch profile" });

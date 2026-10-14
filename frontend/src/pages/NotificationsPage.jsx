@@ -95,7 +95,8 @@ function DonorInbox() {
                       {r.patientName && <> · for {r.patientName}</>}
                     </div>
                     <div className="row-sub">
-                      Requested by {r.seeker?.name} · {r.seeker?.phone}
+                      Requested by {r.seeker?.name}
+                      {r.seeker?.phone ? ` · ${r.seeker.phone}` : " · phone shared once you accept"}
                     </div>
                     {r.respondingAs !== "you" && (
                       <div className="row-sub" style={{ fontStyle: "italic" }}>
@@ -120,7 +121,9 @@ function DonorInbox() {
                   </div>
                 </div>
 
-                {r.myResponse === "Pending" ? (
+                {r.myResponse === "Pending" && r.closed ? (
+                  <span className="pill pill-expired">Request closed</span>
+                ) : r.myResponse === "Pending" ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button disabled={busyKey === key} onClick={() => respond(r.requestId, r.donorId, "Accepted")}>

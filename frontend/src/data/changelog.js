@@ -2,6 +2,16 @@
 // invented dates. Edit freely as you ship more.
 export const CHANGELOG = [
   {
+    version: "v1.5",
+    title: "Privacy hardening, request lifecycle & impact metrics",
+    items: [
+      "Donor and requester contact details are now shared only after a donor accepts",
+      "Requests time out automatically, with a \"Still need blood?\" prompt before they close",
+      "If nobody accepts in time, the search widens and notifies more donors",
+      "Admin moderation page, public Impact page, and a labelled demo-data tool",
+    ],
+  },
+  {
     version: "v1.4.1",
     title: "Richer dashboard & safer logout",
     items: [

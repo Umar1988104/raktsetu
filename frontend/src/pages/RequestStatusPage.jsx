@@ -4,7 +4,8 @@ import { useParams } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Check } from "lucide-react";
+import { Check, Clock, Phone } from "lucide-react";
+import { useConfirm, useToast } from "../components/UiFeedback";
 import { api } from "../api";
 import { UrgencyPill } from "../components/StatusPill";
 import ReadAloudButton from "../components/ReadAloudButton";
@@ -34,6 +35,8 @@ export default function RequestStatusPage() {
   const [matchData, setMatchData] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const askConfirm = useConfirm();
+  const toast = useToast();
 
   function load() {
     api
@@ -57,6 +60,41 @@ export default function RequestStatusPage() {
       load();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // "Yes, I still need blood" — keeps the request open and keeps searching.
+  async function extendRequest() {
+    setBusy(true);
+    try {
+      await api.post(`/api/requests/${id}/extend`, {});
+      toast("Kept open — we'll keep looking for donors.", "success");
+      load();
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // "No longer needed" — closes it so donors stop being notified.
+  async function closeRequest() {
+    const ok = await askConfirm({
+      title: "Close this request?",
+      message: "Donors will stop being notified. You can always create a new request later.",
+      confirmLabel: "Close request",
+      cancelLabel: "Keep it open",
+    });
+    if (!ok) return;
+    setBusy(true);
+    try {
+      await api.post(`/api/requests/${id}/close`, {});
+      toast("Request closed.", "info");
+      load();
+    } catch (err) {
+      toast(err.message, "error");
     } finally {
       setBusy(false);
     }
@@ -100,6 +138,40 @@ export default function RequestStatusPage() {
         </div>
       )}
 
+      {request.lifecycle?.showStillNeedPrompt && (
+        <div className="availability-card" style={{ marginBottom: 20, gap: 12, flexWrap: "wrap" }}>
+          <span>
+            <Clock size={15} style={{ verticalAlign: "middle", marginRight: 6 }} />
+            <strong>Still need blood?</strong> This request closes in about {request.lifecycle.hoursLeft} hours
+            {request.lifecycle.canExtend ? "." : " and can't be extended any further."}
+          </span>
+          <div style={{ display: "flex", gap: 8 }}>
+            {request.lifecycle.canExtend && (
+              <button disabled={busy} onClick={extendRequest}>
+                Yes, keep it open
+              </button>
+            )}
+            <button className="ghost" disabled={busy} onClick={closeRequest}>
+              No longer needed
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isExpired && (
+        <div className="card">
+          <h3>This request is closed</h3>
+          <p style={{ color: "var(--text-soft)", fontSize: "0.92rem", margin: 0 }}>
+            {{
+              "Timed out": "It reached its time limit without a donor confirming. If you still need blood, create a new request.",
+              "Closed by requester": "You closed this request.",
+              "Reported as fake": "It was taken down after donors reported it.",
+              "Closed by admin": "It was closed by a RaktSetu moderator.",
+            }[request.closedReason] || "It's no longer open."}
+          </p>
+        </div>
+      )}
+
       {!isExpired && (
         <div className="card">
           <div className="icon-stepper">
@@ -116,14 +188,49 @@ export default function RequestStatusPage() {
           </div>
 
           {request.status !== "Fulfilled" && !(request.urgency === "Critical" && !request.hospitalVerified) && (
-            <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-              {STAGES.slice(currentIndex + 1).map((stage) => (
-                <button key={stage} className="secondary" disabled={busy} onClick={() => advanceStatus(stage)}>
-                  Mark as {STAGE_LABELS[stage]}
+            <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+              {request.status !== "Confirmed" && (
+                <button className="secondary" disabled={busy} onClick={() => advanceStatus("Confirmed")}>
+                  Mark as Donor Confirmed
                 </button>
-              ))}
+              )}
+              <button className="secondary" disabled={busy} onClick={() => advanceStatus("Fulfilled")}>
+                Mark as Fulfilled
+              </button>
             </div>
           )}
+
+          <p className="row-sub" style={{ marginTop: 12 }}>
+            {request.contactedDonors?.length || 0} donor(s) notified
+            {request.escalationRound > 0 &&
+              ` · search widened ${request.escalationRound} time${request.escalationRound > 1 ? "s" : ""} because no one had accepted yet`}
+          </p>
+        </div>
+      )}
+
+      {request.contactedDonors?.some((c) => c.status === "Accepted") && (
+        <div className="card">
+          <h3>Donors who accepted</h3>
+          {request.contactedDonors
+            .filter((c) => c.status === "Accepted")
+            .map((c) => (
+              <div key={c._id} className="list-row">
+                <div>
+                  <div className="row-title">
+                    {c.donorDisplay.name}
+                    {c.donorDisplay.relation && ` (${c.donorDisplay.relation})`}
+                  </div>
+                  <div className="row-sub">Accepted {c.respondedAt ? new Date(c.respondedAt).toLocaleString() : ""}</div>
+                </div>
+                {c.donorDisplay.phone && (
+                  <a href={`tel:${c.donorDisplay.phone}`}>
+                    <button className="secondary">
+                      <Phone size={14} /> Call
+                    </button>
+                  </a>
+                )}
+              </div>
+            ))}
         </div>
       )}
 
@@ -202,6 +309,7 @@ export default function RequestStatusPage() {
                     <span>
                       #{i + 1} {m.donor?.name}
                       {m.donor?.relation && ` (${m.donor.relation})`} · {m.bloodGroup}
+                      {m.accepted && <span className="pill pill-confirmed" style={{ marginLeft: 6 }}>Accepted</span>}
                       {m.verified && <span className="pill pill-verified" style={{ marginLeft: 6 }}>Verified</span>}
                       {m.trustTier && <span className={`pill ${TIER_CLASS[m.trustTier] || "pill-expired"}`} style={{ marginLeft: 6 }}>{m.trustTier}</span>}
                     </span>
