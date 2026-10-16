@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { ShieldAlert } from "lucide-react";
+import SegmentedControl from "./SegmentedControl";
 
 // Standard, simplified pre-donation screening questions. Answering "yes" to
 // any of these is a real reason a blood bank would turn someone away — this
 // isn't decorative, it's meant to actually cut down wasted donor trips.
+// Shown inside a bottom sheet (see ProfilePage).
 const QUESTIONS = [
   "Have you donated blood in the last 3 months (4 months if you are a woman)?",
   "Do you currently have a fever, cold, or infection?",
@@ -18,35 +20,33 @@ export default function EligibilityCheck({ onConfirm, onCancel }) {
   const anyYes = answers.some((a) => a === true);
 
   return (
-    <div className="card" style={{ borderColor: "var(--primary)" }}>
-      <h3>
-        <ShieldAlert size={18} style={{ verticalAlign: "middle", marginRight: 8, color: "var(--primary)" }} />
+    <div>
+      <h3 id="elig-title">
+        <ShieldAlert size={18} style={{ verticalAlign: "middle", marginRight: 8, color: "var(--brand-text)" }} />
         Quick eligibility check
       </h3>
-      <p style={{ color: "var(--text-soft)", fontSize: "0.88rem", marginTop: -6, marginBottom: 14 }}>
+      <p className="sheet-sub">
         A few quick questions before you go "Available" — helps avoid a wasted trip if you're not
         eligible to donate right now.
       </p>
 
-      {QUESTIONS.map((q, i) => (
-        <div key={i} className="list-row">
-          <span style={{ fontSize: "0.92rem" }}>{q}</span>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              className={answers[i] === true ? "" : "ghost"}
-              onClick={() => setAnswers((a) => a.map((v, idx) => (idx === i ? true : v)))}
-            >
-              Yes
-            </button>
-            <button
-              className={answers[i] === false ? "" : "ghost"}
-              onClick={() => setAnswers((a) => a.map((v, idx) => (idx === i ? false : v)))}
-            >
-              No
-            </button>
+      <div className="sheet-body">
+        {QUESTIONS.map((q, i) => (
+          <div key={i} className="list-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 8 }}>
+            <span style={{ fontSize: "0.92rem" }}>{q}</span>
+            <SegmentedControl
+              block
+              label={q}
+              value={answers[i] === null ? "" : answers[i] ? "yes" : "no"}
+              onChange={(v) => setAnswers((a) => a.map((x, idx) => (idx === i ? v === "yes" : x)))}
+              options={[
+                { value: "yes", label: "Yes" },
+                { value: "no", label: "No" },
+              ]}
+            />
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       {allAnswered && anyYes && (
         <p className="error" style={{ marginTop: 12 }}>
@@ -55,12 +55,12 @@ export default function EligibilityCheck({ onConfirm, onCancel }) {
         </p>
       )}
 
-      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-        <button disabled={!allAnswered || anyYes} onClick={onConfirm}>
-          Confirm — I'm eligible
-        </button>
-        <button className="ghost" onClick={onCancel}>
+      <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
+        <button className="ghost" style={{ flex: 1 }} onClick={onCancel}>
           Cancel
+        </button>
+        <button style={{ flex: 1 }} disabled={!allAnswered || anyYes} onClick={onConfirm}>
+          Confirm — I'm eligible
         </button>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import Skeleton from "../components/Skeleton";
+import * as m from "motion/react-m";
+import { StaggerList, staggerItem } from "../motion/kit";
 import { Link } from "react-router-dom";
 import { Bell, Check, X, Droplet, Flag, Heart } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -32,6 +34,7 @@ function DonorInbox() {
       title: "Report this request as fake?",
       message: "If two different donors report it, the request is automatically taken down and the account that raised it is blocked from new requests for 48 hours.",
       confirmLabel: "Report as fake",
+      tone: "danger",
     });
     if (!ok) return;
     try {
@@ -78,10 +81,11 @@ function DonorInbox() {
             </p>
           </div>
         ) : (
-          incoming.map((r) => {
+          <StaggerList>
+          {incoming.map((r) => {
             const key = `${r.requestId}:${r.donorId}`;
             return (
-              <div key={key} className="list-row" style={{ alignItems: "flex-start" }}>
+              <m.div key={key} variants={staggerItem} layout="position" className="list-row" style={{ alignItems: "flex-start" }}>
                 <div className="list-row-main">
                   <div className="row-icon" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
                     <Droplet size={16} />
@@ -114,7 +118,7 @@ function DonorInbox() {
                           color: "var(--green)",
                         }}
                       >
-                        <Heart size={12} style={{ verticalAlign: "middle", marginRight: 6 }} />
+                        <Heart size={12} style={{ verticalAlign: "middle", marginRight: 8 }} />
                         &ldquo;{r.thankYouNote.message}&rdquo;
                       </div>
                     )}
@@ -124,7 +128,7 @@ function DonorInbox() {
                 {r.myResponse === "Pending" && r.closed ? (
                   <span className="pill pill-expired">Request closed</span>
                 ) : r.myResponse === "Pending" ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button disabled={busyKey === key} onClick={() => respond(r.requestId, r.donorId, "Accepted")}>
                         <Check size={14} /> Accept
@@ -139,7 +143,7 @@ function DonorInbox() {
                     </div>
                     <button
                       className="ghost"
-                      style={{ fontSize: "0.72rem", padding: "4px 10px" }}
+                      style={{ fontSize: "0.72rem", padding: "4px 12px" }}
                       disabled={busyKey === key}
                       onClick={() => reportFake(r.requestId)}
                     >
@@ -151,9 +155,10 @@ function DonorInbox() {
                     {r.myResponse === "Accepted" ? "Accepted" : "Declined"}
                   </span>
                 )}
-              </div>
+              </m.div>
             );
-          })
+          })}
+          </StaggerList>
         )}
       </div>
     </div>

@@ -41,7 +41,7 @@ export default function PhotoUpload({ value, onChange }) {
   }
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
       <div
         className="avatar"
         style={{ width: 64, height: 64, fontSize: "1.3rem", overflow: "hidden", cursor: "pointer" }}

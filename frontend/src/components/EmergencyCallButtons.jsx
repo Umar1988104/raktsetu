@@ -10,19 +10,19 @@ export default function EmergencyCallButtons() {
   return (
     <div
       style={{
-        border: "1px solid var(--primary)",
-        background: "var(--primary-soft)",
+        border: "1px solid var(--danger)",
+        background: "var(--danger-soft)",
         borderRadius: 12,
-        padding: "12px 14px",
+        padding: "12px 16px",
         marginBottom: 16,
       }}
     >
-      <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--primary-dark)", marginBottom: 8 }}>
+      <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--danger-text)", marginBottom: 8 }}>
         {t("Call for help now")}
       </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <a href="tel:112">
-          <button type="button">
+          <button type="button" className="danger">
             <Phone size={14} /> {t("Call 112 (emergency)")}
           </button>
         </a>

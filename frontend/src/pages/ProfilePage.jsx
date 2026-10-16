@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { useToast } from "../components/UiFeedback";
+import Switch from "../components/Switch";
+import Sheet from "../components/Sheet";
 import { Link } from "react-router-dom";
 import { MapPin, Plus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -38,7 +41,7 @@ export default function ProfilePage() {
             <span className="row-sub">Hospital / blood bank name</span>
             <strong>{profile?.user?.hospitalName}</strong>
           </div>
-          <p style={{ fontSize: "0.82rem", color: "var(--text-soft)", marginTop: 10 }}>
+          <p style={{ fontSize: "0.82rem", color: "var(--text-soft)", marginTop: 12 }}>
             Requests must list this name exactly to show up for your verification.
           </p>
         </div>
@@ -87,7 +90,7 @@ function DonorProfile() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <h3 style={{ margin: 0, border: "none", padding: 0 }}>Donor profiles</h3>
         </div>
-        <p style={{ color: "var(--text-soft)", fontSize: "0.85rem", marginTop: 6, marginBottom: 14 }}>
+        <p style={{ color: "var(--text-soft)", fontSize: "0.85rem", marginTop: 8, marginBottom: 16 }}>
           Each profile below can be matched to requests independently — useful if more than one
           person in your household donates.
         </p>
@@ -141,41 +144,48 @@ function DonorProfile() {
 const TIER_CLASS = { New: "pill-expired", Trusted: "pill-confirmed", Pillar: "pill-verified" };
 
 function DonorProfileCard({ donor, onSaved }) {
+  const toast = useToast();
   const [editing, setEditing] = useState(false);
   const [checkingEligibility, setCheckingEligibility] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // Optimistic availability: the switch and pill change the instant you tap;
+  // if the server says no, they snap back and you're told why.
+  const [optimistic, setOptimistic] = useState(null);
+  const available = optimistic ?? donor.available;
+
+  useEffect(() => setOptimistic(null), [donor.available]);
 
   async function turnOff() {
-    setBusy(true);
     setError("");
+    setOptimistic(false);
     try {
       await api.patch(`/api/donors/${donor._id}/availability`, { available: false });
       onSaved();
-    } finally {
-      setBusy(false);
+    } catch (err) {
+      setOptimistic(null);
+      setError(err.message);
+      toast(err.message, "error");
     }
   }
 
   async function confirmEligibleAndTurnOn() {
-    setBusy(true);
     setError("");
+    setCheckingEligibility(false);
+    setOptimistic(true);
     try {
       await api.patch(`/api/donors/${donor._id}/availability`, { available: true, eligibilityConfirmed: true });
-      setCheckingEligibility(false);
       onSaved();
     } catch (err) {
+      setOptimistic(null);
       setError(err.message);
-      setCheckingEligibility(false);
-    } finally {
-      setBusy(false);
+      toast(err.message, "error");
     }
   }
 
-  if (checkingEligibility) {
-    return (
-      <EligibilityCheck onConfirm={confirmEligibleAndTurnOn} onCancel={() => setCheckingEligibility(false)} />
-    );
+  // Going unavailable is instant. Going available needs the eligibility check first.
+  function onToggle(next) {
+    if (next) setCheckingEligibility(true);
+    else turnOff();
   }
 
   if (editing) {
@@ -205,9 +215,9 @@ function DonorProfileCard({ donor, onSaved }) {
           <div className="row-sub">
             {donor.bloodGroup} · <MapPin size={12} style={{ verticalAlign: "middle" }} /> {donor.area}
           </div>
-          <div style={{ marginTop: 4, display: "flex", gap: 6, flexWrap: "wrap" }}>
-            <span className={`pill ${donor.available ? "pill-available" : "pill-unavailable"}`}>
-              {donor.available ? "Available" : "Not available"}
+          <div style={{ marginTop: 4, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <span className={`pill ${available ? "pill-available" : "pill-unavailable"}`}>
+              {available ? "Available" : "Not available"}
             </span>
             {donor.verified && <span className="pill pill-verified">Verified</span>}
             <span className={`pill ${TIER_CLASS[donor.trustTier] || "pill-expired"}`}>{donor.trustTier}</span>
@@ -218,7 +228,7 @@ function DonorProfileCard({ donor, onSaved }) {
             </div>
           )}
           {donor.donationHistory?.length > 0 && (
-            <div style={{ marginTop: 6 }}>
+            <div style={{ marginTop: 8 }}>
               {donor.donationHistory.map((h) => (
                 <div key={h._id} className="row-sub">
                   Donated {new Date(h.date).toLocaleDateString()} ·{" "}
@@ -227,23 +237,23 @@ function DonorProfileCard({ donor, onSaved }) {
               ))}
             </div>
           )}
-          {error && <p className="error" style={{ marginTop: 6 }}>{error}</p>}
+          {error && <p className="error" style={{ marginTop: 8 }}>{error}</p>}
         </div>
       </div>
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+        <div className="switch-row" style={{ gap: 12 }}>
+          <span id={`avail-${donor._id}`} style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+            Available to donate
+          </span>
+          <Switch checked={available} onChange={onToggle} label="Available to donate" />
+        </div>
         <button className="ghost" onClick={() => setEditing(true)}>
           Edit
         </button>
-        {donor.available ? (
-          <button className="ghost" onClick={turnOff} disabled={busy}>
-            Mark unavailable
-          </button>
-        ) : (
-          <button onClick={() => setCheckingEligibility(true)} disabled={busy}>
-            Mark available
-          </button>
-        )}
       </div>
+      <Sheet open={checkingEligibility} onClose={() => setCheckingEligibility(false)} labelledBy="elig-title">
+        <EligibilityCheck onConfirm={confirmEligibleAndTurnOn} onCancel={() => setCheckingEligibility(false)} />
+      </Sheet>
     </div>
   );
 }
@@ -287,7 +297,7 @@ function DonorProfileForm({ existing, familyMemberId, label, onDone, onCancel })
   }
 
   return (
-    <form onSubmit={handleSave} style={{ borderTop: "1px solid var(--border)", paddingTop: 14, marginTop: 10 }}>
+    <form onSubmit={handleSave} style={{ borderTop: "1px solid var(--border)", paddingTop: 16, marginTop: 12 }}>
       <p className="status" style={{ marginTop: 0 }}>
         Donor profile for <strong>{label}</strong>
       </p>
@@ -307,7 +317,7 @@ function DonorProfileForm({ existing, familyMemberId, label, onDone, onCancel })
         <option value="male">Male</option>
         <option value="female">Female</option>
       </select>
-      <p style={{ fontSize: "0.78rem", color: "var(--text-soft)", margin: "6px 0 0" }}>
+      <p style={{ fontSize: "0.78rem", color: "var(--text-soft)", margin: "8px 0 0" }}>
         Used only to set your safe gap between donations: 3 months for men, 4 months for women. If you
         skip this, we use the longer 4-month gap to be safe.
       </p>
@@ -325,7 +335,7 @@ function DonorProfileForm({ existing, familyMemberId, label, onDone, onCancel })
       </div>
 
       {error && <p className="error">{error}</p>}
-      <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
         <button type="submit" disabled={busy}>
           {busy ? "Saving..." : "Save"}
         </button>
@@ -346,7 +356,7 @@ function CareTip({ donors }) {
   if (!recent) return null;
 
   return (
-    <div className="availability-card is-available" style={{ marginBottom: 20, alignItems: "flex-start" }}>
+    <div className="availability-card is-available" style={{ marginBottom: 24, alignItems: "flex-start" }}>
       <span>
         <strong>Thank you for donating.</strong> For the next day or two: drink plenty of water, rest, eat
         iron-rich food (spinach, dates, jaggery, lentils), and skip heavy exercise. If you feel dizzy, lie

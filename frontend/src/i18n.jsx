@@ -138,6 +138,26 @@ const HI = {
     "आप अतिथि सत्र का उपयोग कर रहे हैं। लॉग आउट करने पर आप अपने अनुरोधों तक वापस नहीं पहुँच पाएँगे।",
   "Stay signed in": "साइन इन रहें",
   "You've been logged out.": "आप लॉग आउट हो गए हैं।",
+
+  // v1.6 — appearance and navigation (needs native-speaker review)
+  "Appearance": "दिखावट",
+  "These settings are saved on this device only.": "ये सेटिंग्स केवल इसी डिवाइस पर सहेजी जाती हैं।",
+  "Theme": "थीम",
+  "Auto": "स्वचालित",
+  "Light": "हल्का",
+  "Dark": "गहरा",
+  "Text size": "अक्षर का आकार",
+  "Default": "सामान्य",
+  "Large": "बड़ा",
+  "Extra large": "बहुत बड़ा",
+  "High contrast": "उच्च कंट्रास्ट",
+  "Stronger text and borders for easier reading.": "पढ़ने में आसानी के लिए गहरे अक्षर और स्पष्ट किनारे।",
+  "Language": "भाषा",
+  "Done": "हो गया",
+  "Animations follow your device's \"reduce motion\" setting.": "एनिमेशन आपके डिवाइस की \"कम गति\" सेटिंग का पालन करते हैं।",
+  "Main navigation": "मुख्य नेविगेशन",
+  "Open menu": "मेनू खोलें",
+  "Close menu": "मेनू बंद करें",
 };
 
 const LanguageContext = createContext({ lang: "en", setLang: () => {}, t: (s) => s });

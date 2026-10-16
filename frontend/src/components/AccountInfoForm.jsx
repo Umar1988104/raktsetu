@@ -57,9 +57,9 @@ export default function AccountInfoForm() {
       <label>Full name</label>
       <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
 
-      <div className="list-row" style={{ padding: "10px 0" }}>
+      <div className="list-row" style={{ padding: "12px 0" }}>
         <span className="row-sub">
-          <Mail size={14} style={{ marginRight: 6, verticalAlign: "middle" }} />
+          <Mail size={14} style={{ marginRight: 8, verticalAlign: "middle" }} />
           Email
         </span>
         <span>{firebaseUser?.email}</span>

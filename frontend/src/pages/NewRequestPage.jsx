@@ -74,7 +74,7 @@ export default function NewRequestPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>{isSos && <Siren size={22} style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }} />}{t("New request")}</h1>
+        <h1>{isSos && <Siren size={22} style={{ color: "var(--danger-text)", verticalAlign: "middle", marginRight: 8 }} />}{t("New request")}</h1>
         <p>
           {isSos
             ? t("SOS mode — urgency and your location are pre-filled. Just add the essentials and submit.")
@@ -184,7 +184,7 @@ export default function NewRequestPage() {
           </div>
 
           {form.urgency === "Critical" && (
-            <p className="status" style={{ marginTop: 10 }}>
+            <p className="status" style={{ marginTop: 12 }}>
               Critical requests are held for hospital verification before donors are notified, to
               prevent misuse of the highest urgency tier. Make sure the hospital name below exactly
               matches a registered hospital partner account, or it won't be picked up.
@@ -209,7 +209,7 @@ export default function NewRequestPage() {
           <div className="cta-icon">
             <HeartHandshake size={40} style={{ margin: "0 auto" }} />
           </div>
-          <h3 style={{ color: "#fff" }}>Need blood urgently?</h3>
+          <h3>Need blood urgently?</h3>
           <p>We'll rank compatible, available donors by distance the moment you submit this request.</p>
         </div>
       </div>

@@ -86,6 +86,7 @@ export default function RequestStatusPage() {
       message: "Donors will stop being notified. You can always create a new request later.",
       confirmLabel: "Close request",
       cancelLabel: "Keep it open",
+      tone: "danger",
     });
     if (!ok) return;
     setBusy(true);
@@ -124,13 +125,13 @@ export default function RequestStatusPage() {
       </div>
 
       {!isExpired && (
-        <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 24 }}>
           <ShareRequestButton request={request} />
         </div>
       )}
 
       {request.urgency === "Critical" && !request.hospitalVerified && request.status === "Searching" && (
-        <div className="availability-card" style={{ marginBottom: 20 }}>
+        <div className="availability-card" style={{ marginBottom: 24 }}>
           <span>
             Awaiting verification from <strong>{request.hospital}</strong> before donors are notified —
             this happens automatically once they verify it.
@@ -139,9 +140,9 @@ export default function RequestStatusPage() {
       )}
 
       {request.lifecycle?.showStillNeedPrompt && (
-        <div className="availability-card" style={{ marginBottom: 20, gap: 12, flexWrap: "wrap" }}>
+        <div className="availability-card" style={{ marginBottom: 24, gap: 12, flexWrap: "wrap" }}>
           <span>
-            <Clock size={15} style={{ verticalAlign: "middle", marginRight: 6 }} />
+            <Clock size={15} style={{ verticalAlign: "middle", marginRight: 8 }} />
             <strong>Still need blood?</strong> This request closes in about {request.lifecycle.hoursLeft} hours
             {request.lifecycle.canExtend ? "." : " and can't be extended any further."}
           </span>
@@ -188,7 +189,7 @@ export default function RequestStatusPage() {
           </div>
 
           {request.status !== "Fulfilled" && !(request.urgency === "Critical" && !request.hospitalVerified) && (
-            <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
               {request.status !== "Confirmed" && (
                 <button className="secondary" disabled={busy} onClick={() => advanceStatus("Confirmed")}>
                   Mark as Donor Confirmed
@@ -309,9 +310,9 @@ export default function RequestStatusPage() {
                     <span>
                       #{i + 1} {m.donor?.name}
                       {m.donor?.relation && ` (${m.donor.relation})`} · {m.bloodGroup}
-                      {m.accepted && <span className="pill pill-confirmed" style={{ marginLeft: 6 }}>Accepted</span>}
-                      {m.verified && <span className="pill pill-verified" style={{ marginLeft: 6 }}>Verified</span>}
-                      {m.trustTier && <span className={`pill ${TIER_CLASS[m.trustTier] || "pill-expired"}`} style={{ marginLeft: 6 }}>{m.trustTier}</span>}
+                      {m.accepted && <span className="pill pill-confirmed" style={{ marginLeft: 8 }}>Accepted</span>}
+                      {m.verified && <span className="pill pill-verified" style={{ marginLeft: 8 }}>Verified</span>}
+                      {m.trustTier && <span className={`pill ${TIER_CLASS[m.trustTier] || "pill-expired"}`} style={{ marginLeft: 8 }}>{m.trustTier}</span>}
                     </span>
                     <span className="match-distance">{m.distanceKm} km</span>
                   </li>

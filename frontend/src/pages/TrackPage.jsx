@@ -47,7 +47,7 @@ export default function TrackPage() {
   return (
     <div className="auth-shell" style={{ alignItems: "flex-start", paddingTop: 40 }}>
       <div className="auth-card" style={{ maxWidth: 560 }}>
-        <Link to="/" className="sidebar-brand" style={{ padding: 0, marginBottom: 18 }}>
+        <Link to="/" className="sidebar-brand" style={{ padding: 0, marginBottom: 16 }}>
           <span className="mark">
             <Droplet size={16} fill="currentColor" />
           </span>
@@ -62,7 +62,7 @@ export default function TrackPage() {
             <h2 style={{ marginBottom: 4 }}>
               {info.bloodGroup} · {info.units} unit{info.units > 1 ? "s" : ""} needed
             </h2>
-            <p style={{ color: "var(--text-soft)", fontSize: "0.9rem", margin: "0 0 14px" }}>
+            <p style={{ color: "var(--text-soft)", fontSize: "0.9rem", margin: "0 0 16px" }}>
               <MapPin size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />
               {info.hospital}, {info.area} &nbsp;<UrgencyPill urgency={info.urgency} />
             </p>
@@ -103,8 +103,8 @@ export default function TrackPage() {
               {lastChecked && <> · last checked {lastChecked.toLocaleTimeString()}</>}
             </p>
 
-            <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 14 }}>
-              <p style={{ fontSize: "0.88rem", margin: "0 0 10px" }}>
+            <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+              <p style={{ fontSize: "0.88rem", margin: "0 0 12px" }}>
                 Can you donate, or know someone who can? RaktSetu matches donors to requests like this one.
               </p>
               <Link to="/signup" className="btn-primary">

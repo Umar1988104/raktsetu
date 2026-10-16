@@ -14,7 +14,7 @@ import DemoNotice from "../components/DemoNotice";
 import { CHANGELOG } from "../data/changelog";
 import { TIPS } from "../data/tips";
 
-const CHART_COLORS = ["#E6364A", "#F5A623", "#2F80ED", "#8B5CF6", "#16A34A", "#0EA5B7", "#D946EF", "#64748B"];
+const CHART_COLORS = ["#0F766E", "#F59E0B", "#2F6FDE", "#8B5CF6", "#16A34A", "#0EA5B7", "#D946EF", "#64748B"];
 const TIER_CLASS = { New: "pill-expired", Trusted: "pill-confirmed", Pillar: "pill-verified" };
 
 export default function Dashboard() {
@@ -115,7 +115,7 @@ export default function Dashboard() {
                 <div className="empty-state">
                   <Droplet size={26} className="empty-icon" />
                   <p>No requests yet.</p>
-                  <Link to="/requests/new" className="btn-primary" style={{ marginTop: 10 }}>
+                  <Link to="/requests/new" className="btn-primary" style={{ marginTop: 12 }}>
                     Create your first request
                   </Link>
                 </div>
@@ -157,7 +157,7 @@ export default function Dashboard() {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
-                <Pie data={chartData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={75} paddingAngle={2}>
+                <Pie stroke="var(--surface)" data={chartData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={75} paddingAngle={2}>
                   {chartData.map((_, i) => (
                     <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                   ))}
@@ -194,7 +194,7 @@ export default function Dashboard() {
 function HeaderAction({ role, t }) {
   if (role === "seeker") {
     return (
-      <Link to="/requests/new?sos=1" className="btn-primary">
+      <Link to="/requests/new?sos=1" className="btn-primary btn-danger">
         <Siren size={15} /> {t("SOS — Request Now")}
       </Link>
     );
@@ -251,7 +251,7 @@ function LiveStrip({ stats, t }) {
 function QuickActions({ role, t }) {
   const sets = {
     seeker: [
-      { to: "/requests/new?sos=1", icon: <Siren size={18} />, title: "SOS — Request Now", desc: "Fastest way to ask for blood", emphasis: true },
+      { to: "/requests/new?sos=1", icon: <Siren size={18} />, title: "SOS — Request Now", desc: "Fastest way to ask for blood", urgent: true },
       { to: "/requests/new", icon: <PlusCircle size={18} />, title: "New Request", desc: "Add full details", color: "orange" },
       { to: "/donors", icon: <Users size={18} />, title: "Donor Network", desc: "See who's nearby", color: "green" },
       { to: "/camps", icon: <Tent size={18} />, title: "Donation Camps", desc: "Upcoming drives", color: "blue" },
@@ -273,10 +273,10 @@ function QuickActions({ role, t }) {
   return (
     <div className="quick-grid">
       {(sets[role] || []).map((a) => (
-        <Link key={a.to + a.title} to={a.to} className={`quick-tile ${a.emphasis ? "emphasis" : ""}`}>
+        <Link key={a.to + a.title} to={a.to} className={`quick-tile ${a.urgent ? "urgent" : a.emphasis ? "emphasis" : ""}`}>
           <div
             className="quick-icon"
-            style={!a.emphasis ? { background: `var(--${a.color}-soft)`, color: `var(--${a.color})` } : undefined}
+            style={!a.emphasis && !a.urgent ? { background: `var(--${a.color}-soft)`, color: `var(--${a.color})` } : undefined}
           >
             {a.icon}
           </div>
@@ -320,10 +320,10 @@ function DonorStatusCard({ donors, t }) {
       {donors === null ? (
         <p className="status" style={{ margin: 0 }}>Loading…</p>
       ) : donors.length === 0 ? (
-        <div className="empty-state" style={{ padding: "20px 0 8px" }}>
+        <div className="empty-state" style={{ padding: "24px 0 8px" }}>
           <Droplet size={26} className="empty-icon" />
           <p>You haven't set up a donor profile yet.</p>
-          <Link to="/profile" className="btn-primary" style={{ marginTop: 6 }}>
+          <Link to="/profile" className="btn-primary" style={{ marginTop: 8 }}>
             Create your donor profile
           </Link>
         </div>
@@ -343,7 +343,7 @@ function DonorStatusCard({ donors, t }) {
                 </div>
               </div>
             </div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
               <span className={`pill ${d.available ? "pill-available" : "pill-unavailable"}`}>
                 {d.available ? "Available" : "Not available"}
               </span>
@@ -369,7 +369,7 @@ function PendingVerifyCard({ count, t }) {
       ) : (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: "0.95rem" }}>
-            <strong style={{ color: "var(--primary)", fontSize: "1.3rem" }}>{count}</strong> Critical{" "}
+            <strong style={{ color: "var(--danger-text)", fontSize: "1.3rem" }}>{count}</strong> Critical{" "}
             {count === 1 ? "request needs" : "requests need"} your verification before donors are notified.
           </span>
           <Link to="/verify" className="btn-primary">
@@ -397,7 +397,7 @@ function CampsPreview({ camps, role, t }) {
           <Tent size={26} className="empty-icon" />
           <p>No upcoming camps posted yet.</p>
           {role === "hospital" && (
-            <Link to="/camps" className="btn-primary" style={{ marginTop: 6 }}>
+            <Link to="/camps" className="btn-primary" style={{ marginTop: 8 }}>
               Post a camp
             </Link>
           )}
@@ -463,7 +463,7 @@ function RecurringCareReminders({ familyMembers }) {
   if (due.length === 0) return null;
 
   return (
-    <div className="availability-card" style={{ marginBottom: 20 }}>
+    <div className="availability-card" style={{ marginBottom: 24 }}>
       <span>
         <strong>{due.map((d) => d.member.name).join(", ")}</strong> {due.length === 1 ? "is" : "are"} due for a
         transfusion.

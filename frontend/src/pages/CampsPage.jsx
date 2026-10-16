@@ -75,11 +75,11 @@ export default function CampsPage() {
                   <div className="row-sub">
                     <Calendar size={12} style={{ verticalAlign: "middle", marginRight: 4 }} />
                     {new Date(c.date).toLocaleDateString(undefined, { dateStyle: "medium" })} ·{" "}
-                    <MapPin size={12} style={{ verticalAlign: "middle", marginRight: 2 }} />
+                    <MapPin size={12} style={{ verticalAlign: "middle", marginRight: 4 }} />
                     {c.address}, {c.area}
                   </div>
                   <div className="row-sub">Hosted by {c.hospitalName}</div>
-                  <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {c.accessibility?.wheelchairRamp && <span className="pill pill-verified">Wheelchair ramp</span>}
                     {c.accessibility?.groundFloor && <span className="pill pill-verified">Ground floor</span>}
                     {c.accessibility?.accessibleParking && <span className="pill pill-verified">Accessible parking</span>}
@@ -146,7 +146,7 @@ function PostCampForm({ onDone }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ borderTop: "1px solid var(--border)", paddingTop: 14, marginTop: 14 }}>
+    <form onSubmit={handleSubmit} style={{ borderTop: "1px solid var(--border)", paddingTop: 16, marginTop: 16 }}>
       <label>Camp name</label>
       <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
 
@@ -195,7 +195,7 @@ function PostCampForm({ onDone }) {
       </label>
 
       {error && <p className="error">{error}</p>}
-      <button type="submit" disabled={busy} style={{ marginTop: 14 }}>
+      <button type="submit" disabled={busy} style={{ marginTop: 16 }}>
         {busy ? "Posting..." : "Post camp"}
       </button>
     </form>

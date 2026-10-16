@@ -92,6 +92,7 @@ export default function FamilyMembersSection({ familyMembers, onChange }) {
       title: "Remove this family member?",
       message: "Any donor profile registered under their name will be removed too. This can't be undone.",
       confirmLabel: "Remove",
+      tone: "danger",
     });
     if (!ok) return;
     setBusy(true);
@@ -108,7 +109,7 @@ export default function FamilyMembersSection({ familyMembers, onChange }) {
 
   return (
     <div className="card">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <h3 style={{ margin: 0, border: "none", padding: 0 }}>Family members</h3>
         {editing === null && (
           <button className="secondary" onClick={startAdd}>
@@ -116,7 +117,7 @@ export default function FamilyMembersSection({ familyMembers, onChange }) {
           </button>
         )}
       </div>
-      <p style={{ color: "var(--text-soft)", fontSize: "0.85rem", marginTop: -6, marginBottom: 14 }}>
+      <p style={{ color: "var(--text-soft)", fontSize: "0.85rem", marginTop: -6, marginBottom: 16 }}>
         Add people in your household so you can raise a request, or register them as a donor,
         without them needing their own login.
       </p>
@@ -137,7 +138,7 @@ export default function FamilyMembersSection({ familyMembers, onChange }) {
                 <RecurringCareBadge care={m.recurringCare} />
               )}
             </div>
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: "flex", gap: 8 }}>
               <button className="ghost" onClick={() => startEdit(m)}>
                 <Pencil size={14} />
               </button>
@@ -183,7 +184,7 @@ function RecurringCareBadge({ care }) {
 
 function FamilyForm({ form, setForm, onCancel, onSave, busy }) {
   return (
-    <form onSubmit={onSave} style={{ borderTop: "1px solid var(--border)", paddingTop: 14, marginTop: 10 }}>
+    <form onSubmit={onSave} style={{ borderTop: "1px solid var(--border)", paddingTop: 16, marginTop: 12 }}>
       <label>Name</label>
       <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
 
@@ -221,7 +222,7 @@ function FamilyForm({ form, setForm, onCancel, onSave, busy }) {
       </label>
 
       {form.hasRecurringCare && (
-        <div style={{ borderLeft: "2px solid var(--primary)", paddingLeft: 12, marginTop: 10 }}>
+        <div style={{ borderLeft: "2px solid var(--primary)", paddingLeft: 12, marginTop: 12 }}>
           <label>Condition name</label>
           <input
             placeholder="e.g. Thalassemia Major"
@@ -247,7 +248,7 @@ function FamilyForm({ form, setForm, onCancel, onSave, busy }) {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
         <button type="submit" disabled={busy}>
           Save
         </button>

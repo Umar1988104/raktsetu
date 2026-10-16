@@ -1,3 +1,4 @@
+import Switch from "../components/Switch";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, Lock } from "lucide-react";
@@ -59,14 +60,14 @@ export default function DonorNetworkPage() {
             value={filters.area}
             onChange={(e) => setFilters({ ...filters, area: e.target.value })}
           />
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
+          <div className="switch-row" style={{ gap: 8 }}>
+            <span style={{ fontSize: "0.88rem", fontWeight: 600 }}>Available now</span>
+            <Switch
+              label="Available now"
               checked={filters.availableOnly}
-              onChange={(e) => setFilters({ ...filters, availableOnly: e.target.checked })}
+              onChange={(v) => setFilters({ ...filters, availableOnly: v })}
             />
-            Available now
-          </label>
+          </div>
           <button type="submit" disabled={busy}>
             <Search size={15} /> Search
           </button>
@@ -91,7 +92,7 @@ export default function DonorNetworkPage() {
                   <div className="row-sub">
                     {d.bloodGroup} · {d.area}
                   </div>
-                  <div style={{ marginTop: 4, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <div style={{ marginTop: 4, display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <span className={`pill ${d.available ? "pill-available" : "pill-unavailable"}`}>
                       {d.available ? "Available now" : "Not available"}
                     </span>

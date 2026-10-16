@@ -1,9 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover lets the page use the full screen on notched phones;
+         the CSS keeps content clear of the notch with safe-area padding. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#F2F5F7" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -11,6 +15,22 @@
       rel="stylesheet"
     />
     <title>RaktSetu</title>
+    <!-- Applies the saved theme / contrast / text size BEFORE the app loads,
+         so a dark-mode user never sees a white flash. Mirrors src/prefs.jsx. -->
+    <script>
+      (function () {
+        try {
+          var p = JSON.parse(localStorage.getItem("raktsetu_prefs") || "{}");
+          var d = document.documentElement;
+          var dark = p.theme === "dark" || ((!p.theme || p.theme === "system") && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          d.setAttribute("data-theme", dark ? "dark" : "light");
+          if (p.contrast === "high") d.setAttribute("data-contrast", "high");
+          if (p.textSize === "large" || p.textSize === "xlarge") d.setAttribute("data-text", p.textSize);
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute("content", dark ? "#0B1217" : "#F2F5F7");
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

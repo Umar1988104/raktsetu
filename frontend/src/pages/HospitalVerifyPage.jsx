@@ -97,7 +97,7 @@ export default function HospitalVerifyPage() {
 
       <div className="card">
         <h3>Verify a donor</h3>
-        <form onSubmit={searchDonors} className="filter-row" style={{ marginBottom: 14 }}>
+        <form onSubmit={searchDonors} className="filter-row" style={{ marginBottom: 16 }}>
           <input
             placeholder="Search by name, phone, or email"
             value={query}

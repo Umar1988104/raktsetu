@@ -30,9 +30,9 @@ export default function ImpactPage() {
       </div>
 
       {data.demoDataIncluded && (
-        <div className="availability-card" style={{ marginBottom: 20 }}>
+        <div className="availability-card" style={{ marginBottom: 24 }}>
           <span>
-            <Info size={15} style={{ verticalAlign: "middle", marginRight: 6 }} />
+            <Info size={15} style={{ verticalAlign: "middle", marginRight: 8 }} />
             <strong>This page currently includes sample demo data.</strong> Those numbers illustrate how the metrics work —
             they are not real usage.
           </span>
@@ -47,7 +47,7 @@ export default function ImpactPage() {
           <div className="stat-value">{fmtMinutes(rt.medianFirstReplyMinutes)}</div>
           <div className="stat-label">Median time to a donor's first reply</div>
           {rt.repliedSample ? (
-            <div className="row-sub" style={{ marginTop: 6 }}>
+            <div className="row-sub" style={{ marginTop: 8 }}>
               Average {fmtMinutes(rt.avgFirstReplyMinutes)} · {rt.repliedSample} request{rt.repliedSample > 1 ? "s" : ""}
             </div>
           ) : (
@@ -62,7 +62,7 @@ export default function ImpactPage() {
           <div className="stat-value">{fmtPercent(uc.percent)}</div>
           <div className="stat-label">Urgent requests accepted within {uc.windowMinutes} min</div>
           {uc.eligible ? (
-            <div className="row-sub" style={{ marginTop: 6 }}>
+            <div className="row-sub" style={{ marginTop: 8 }}>
               {uc.acceptedWithinWindow} of {uc.eligible} Urgent/Critical requests
             </div>
           ) : (
@@ -77,7 +77,7 @@ export default function ImpactPage() {
           <div className="stat-value">{fmtPercent(oc.fulfilmentRate)}</div>
           <div className="stat-label">Of closed requests were fulfilled</div>
           {oc.closed ? (
-            <div className="row-sub" style={{ marginTop: 6 }}>
+            <div className="row-sub" style={{ marginTop: 8 }}>
               {oc.fulfilled} fulfilled · {oc.expired} closed without a donor
             </div>
           ) : (
@@ -91,7 +91,7 @@ export default function ImpactPage() {
           </div>
           <div className="stat-value">{totals.verifiedDonors}</div>
           <div className="stat-label">Hospital-verified donors</div>
-          <div className="row-sub" style={{ marginTop: 6 }}>
+          <div className="row-sub" style={{ marginTop: 8 }}>
             of {totals.donors} registered · {totals.hospitalPartners} hospital partner{totals.hospitalPartners === 1 ? "" : "s"}
           </div>
         </div>
@@ -119,7 +119,7 @@ export default function ImpactPage() {
             </div>
           ))}
           {data.removedAsFake > 0 && (
-            <p className="row-sub" style={{ marginTop: 10 }}>
+            <p className="row-sub" style={{ marginTop: 12 }}>
               {data.removedAsFake} request{data.removedAsFake > 1 ? "s" : ""} taken down as fake {data.removedAsFake > 1 ? "are" : "is"} excluded from every figure.
             </p>
           )}
@@ -131,7 +131,7 @@ export default function ImpactPage() {
             <p className="empty-note">No donors registered yet.</p>
           ) : (
             donorsByArea.map((a) => (
-              <div key={a.area} style={{ marginBottom: 14 }}>
+              <div key={a.area} style={{ marginBottom: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.88rem", marginBottom: 4 }}>
                   <span>{a.area}</span>
                   <span className="row-sub">
@@ -149,7 +149,7 @@ export default function ImpactPage() {
 
       <div className="card">
         <h3>How these are measured</h3>
-        <ul style={{ margin: 0, paddingLeft: 18, color: "var(--text-soft)", fontSize: "0.88rem", lineHeight: 1.7 }}>
+        <ul style={{ margin: 0, paddingLeft: 16, color: "var(--text-soft)", fontSize: "0.88rem", lineHeight: 1.7 }}>
           <li>Response time runs from the moment a request is raised to a donor's first reply. Critical requests include the time spent waiting for hospital verification.</li>
           <li>The {uc.windowMinutes}-minute figure only counts Urgent and Critical requests old enough to have had the full {uc.windowMinutes} minutes.</li>
           <li>Areas are the free-text areas donors typed in, grouped ignoring capitalisation and spacing.</li>

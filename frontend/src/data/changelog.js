@@ -2,6 +2,18 @@
 // invented dates. Edit freely as you ship more.
 export const CHANGELOG = [
   {
+    version: "v1.6",
+    title: "Calmer design & smoother feel",
+    items: [
+      "New look: a calm deep-teal brand colour, with red kept only for urgent things (SOS, Critical, errors)",
+      "New RaktSetu logo — a blood drop resting on a bridge",
+      "Dark mode, high-contrast mode and a text-size setting (tap the sun/moon icon)",
+      "iOS-style motion: springy page transitions, sliding menu highlight, bottom sheets and swipe-to-dismiss notifications",
+      "Availability is now a switch that responds instantly, and rolls back if it can't be saved",
+      "Pages load faster: the app is split into smaller pieces that download as you need them",
+    ],
+  },
+  {
     version: "v1.5",
     title: "Privacy hardening, request lifecycle & impact metrics",
     items: [

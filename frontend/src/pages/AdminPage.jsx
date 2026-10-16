@@ -37,8 +37,8 @@ export default function AdminPage() {
     if (profile?.isAdmin) load();
   }, [profile?.isAdmin]);
 
-  async function act({ id, path, title, message, confirmLabel, done }) {
-    const ok = await askConfirm({ title, message, confirmLabel });
+  async function act({ id, path, title, message, confirmLabel, done, tone }) {
+    const ok = await askConfirm({ title, message, confirmLabel, tone });
     if (!ok) return;
     setBusyId(id);
     try {
@@ -98,7 +98,7 @@ export default function AdminPage() {
                   {r.seeker?.phone ? ` (${r.seeker.phone})` : ""}
                   {r.seeker?.isGuest ? " · guest" : ""}
                 </div>
-                <div style={{ marginTop: 6 }}>
+                <div style={{ marginTop: 8 }}>
                   <StatusPill status={r.status} />
                 </div>
               </div>
@@ -130,6 +130,7 @@ export default function AdminPage() {
                         message: "Donors will stop being notified about it.",
                         confirmLabel: "Close request",
                         done: "Request closed.",
+                        tone: "danger",
                       })
                     }
                   >

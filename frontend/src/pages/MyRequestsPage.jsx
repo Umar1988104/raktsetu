@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { Droplet, ChevronRight } from "lucide-react";
 import { api } from "../api";
 import StatusPill from "../components/StatusPill";
 import Skeleton from "../components/Skeleton";
+import SegmentedControl from "../components/SegmentedControl";
+import { StaggerList, MLink, staggerItem } from "../motion/kit";
 
 export default function MyRequestsPage() {
   const [requests, setRequests] = useState(null);
@@ -16,9 +17,9 @@ export default function MyRequestsPage() {
       .catch(() => setRequests([]));
   }, []);
 
-  const filtered = (requests || []).filter((r) =>
-    tab === "active" ? !["Fulfilled", "Expired"].includes(r.status) : ["Fulfilled", "Expired"].includes(r.status)
-  );
+  const isDone = (r) => ["Fulfilled", "Expired"].includes(r.status);
+  const all = requests || [];
+  const filtered = all.filter((r) => (tab === "active" ? !isDone(r) : isDone(r)));
 
   return (
     <div>
@@ -27,13 +28,16 @@ export default function MyRequestsPage() {
         <p>View and manage your blood requests.</p>
       </div>
 
-      <div className="tabs">
-        <button className={`tab ${tab === "active" ? "active" : ""}`} onClick={() => setTab("active")}>
-          Active
-        </button>
-        <button className={`tab ${tab === "history" ? "active" : ""}`} onClick={() => setTab("history")}>
-          History
-        </button>
+      <div style={{ marginBottom: 16 }}>
+        <SegmentedControl
+          label="Request list"
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: "active", label: "Active", count: requests ? all.filter((r) => !isDone(r)).length : undefined },
+            { value: "history", label: "History", count: requests ? all.filter(isDone).length : undefined },
+          ]}
+        />
       </div>
 
       <div className="card">
@@ -45,8 +49,9 @@ export default function MyRequestsPage() {
             <p>No {tab === "active" ? "active" : "past"} requests.</p>
           </div>
         ) : (
-          filtered.map((r) => (
-            <Link key={r._id} to={`/requests/${r._id}`} className="list-row" style={{ color: "inherit" }}>
+          <StaggerList key={tab}>
+            {filtered.map((r) => (
+            <MLink key={r._id} variants={staggerItem} to={`/requests/${r._id}`} className="list-row" style={{ color: "inherit" }}>
               <div className="list-row-main">
                 <div className="row-icon" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
                   <Droplet size={16} />
@@ -58,12 +63,13 @@ export default function MyRequestsPage() {
                   <div className="row-sub">{r.hospital}</div>
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <StatusPill status={r.status} />
                 <ChevronRight size={16} color="var(--text-soft)" />
               </div>
-            </Link>
-          ))
+            </MLink>
+            ))}
+          </StaggerList>
         )}
       </div>
     </div>

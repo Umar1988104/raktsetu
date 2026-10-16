@@ -61,6 +61,14 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <div className="card">
+          <h3>Display settings stored on your device</h3>
+          <p>
+            Your language, theme (light / dark), contrast and text-size choices are saved in your
+            own browser so they're remembered next time. They are never sent to our servers.
+          </p>
+        </div>
+
+        <div className="card">
           <h3>If something goes wrong</h3>
           <p>
             No system is unbreakable. If we ever became aware of unauthorized access to stored

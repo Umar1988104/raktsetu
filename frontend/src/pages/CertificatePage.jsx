@@ -20,7 +20,7 @@ export default function CertificatePage() {
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh", padding: "24px 16px" }}>
       <div className="no-print" style={{ maxWidth: 760, margin: "0 auto 16px", display: "flex", justifyContent: "space-between" }}>
-        <Link to="/profile" className="btn-outline" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <Link to="/profile" className="btn-outline" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
           <ArrowLeft size={14} /> Back to profile
         </Link>
         {entry && (
@@ -46,14 +46,14 @@ export default function CertificatePage() {
             textAlign: "center",
           }}
         >
-          <div className="sidebar-brand" style={{ justifyContent: "center", padding: 0, marginBottom: 20 }}>
+          <div className="sidebar-brand" style={{ justifyContent: "center", padding: 0, marginBottom: 24 }}>
             <span className="mark">
               <Droplet size={16} fill="currentColor" />
             </span>
             RaktSetu
           </div>
 
-          <p className="section-kicker" style={{ marginBottom: 6 }}>Blood donation acknowledgement</p>
+          <p className="section-kicker" style={{ marginBottom: 8 }}>Blood donation acknowledgement</p>
           <h1 style={{ fontSize: "1.9rem", marginBottom: 24 }}>Thank you, {data.donorName}</h1>
 
           <p style={{ fontSize: "1.05rem", lineHeight: 1.7, maxWidth: "52ch", margin: "0 auto" }}>
@@ -70,13 +70,13 @@ export default function CertificatePage() {
             , through RaktSetu.
           </p>
 
-          <p style={{ marginTop: 28, fontWeight: 600, color: "var(--primary)" }}>
+          <p style={{ marginTop: 32, fontWeight: 600, color: "var(--primary)" }}>
             A donation like this can help save up to three lives.
           </p>
 
           <p
             style={{
-              marginTop: 36,
+              marginTop: 32,
               paddingTop: 16,
               borderTop: "1px solid var(--border)",
               fontSize: "0.75rem",

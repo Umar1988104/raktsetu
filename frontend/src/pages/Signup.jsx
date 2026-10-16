@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useLang } from "../i18n";
 import LanguageToggle from "../components/LanguageToggle";
+import AppearanceButton from "../components/AppearanceSheet";
+import { BrandLockup } from "../components/Brand";
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -30,7 +32,12 @@ export default function Signup() {
   return (
     <div className="auth-shell">
       <div className="auth-card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 8 }}>
+        <div className="auth-brand">
+          <BrandLockup />
+          <span style={{ flex: 1 }} />
+          <AppearanceButton />
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, gap: 8, flexWrap: "wrap" }}>
           <h2 style={{ margin: 0 }}>{t("Create your RaktSetu account")}</h2>
           <LanguageToggle />
         </div>
@@ -52,7 +59,7 @@ export default function Signup() {
             {busy ? t("Creating account...") : t("Sign up")}
           </button>
         </form>
-        <p style={{ marginTop: 14, fontSize: "0.88rem" }}>
+        <p style={{ marginTop: 16, fontSize: "0.88rem" }}>
           {t("Already have an account?")} <Link to="/login">{t("Log in")}</Link>
         </p>
       </div>

@@ -1,3 +1,4 @@
+import SegmentedControl from "../components/SegmentedControl";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -43,38 +44,23 @@ export default function CompleteProfile() {
           />
 
           <label>I am a...</label>
-          <div className="role-pick">
-            <label>
-              <input
-                type="radio"
-                name="role"
-                value="seeker"
-                checked={role === "seeker"}
-                onChange={() => setRole("seeker")}
-              />
-              Blood seeker (raising a request)
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="role"
-                value="donor"
-                checked={role === "donor"}
-                onChange={() => setRole("donor")}
-              />
-              Donor
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="role"
-                value="hospital"
-                checked={role === "hospital"}
-                onChange={() => setRole("hospital")}
-              />
-              Hospital / blood bank partner
-            </label>
-          </div>
+          <SegmentedControl
+            block
+            large
+            label="I am a"
+            value={role}
+            onChange={setRole}
+            options={[
+              { value: "seeker", label: "Seeker" },
+              { value: "donor", label: "Donor" },
+              { value: "hospital", label: "Hospital" },
+            ]}
+          />
+          <p className="status" style={{ marginTop: 8 }}>
+            {role === "seeker" && "Blood seeker — you raise requests for yourself or family."}
+            {role === "donor" && "Donor — you get matched to requests near you."}
+            {role === "hospital" && "Hospital / blood bank partner — you verify Critical requests and donors."}
+          </p>
 
           {role === "hospital" && (
             <>

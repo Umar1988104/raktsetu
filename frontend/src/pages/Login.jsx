@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useLang } from "../i18n";
 import LanguageToggle from "../components/LanguageToggle";
+import AppearanceButton from "../components/AppearanceSheet";
+import { BrandLockup } from "../components/Brand";
 
 export default function Login() {
   const { login } = useAuth();
@@ -30,7 +32,12 @@ export default function Login() {
   return (
     <div className="auth-shell">
       <div className="auth-card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <div className="auth-brand">
+          <BrandLockup />
+          <span style={{ flex: 1 }} />
+          <AppearanceButton />
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, gap: 8 }}>
           <h2 style={{ margin: 0 }}>{t("Log in")}</h2>
           <LanguageToggle />
         </div>
@@ -46,7 +53,7 @@ export default function Login() {
             {busy ? t("Logging in...") : t("Log in")}
           </button>
         </form>
-        <p style={{ marginTop: 14, fontSize: "0.88rem" }}>
+        <p style={{ marginTop: 16, fontSize: "0.88rem" }}>
           {t("Need an account?")} <Link to="/signup">{t("Sign up")}</Link>
         </p>
       </div>

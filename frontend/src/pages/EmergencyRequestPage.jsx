@@ -72,7 +72,7 @@ export default function EmergencyRequestPage() {
   return (
     <div className="auth-shell" style={{ alignItems: "flex-start", paddingTop: 40 }}>
       <div className="auth-card" style={{ maxWidth: 520 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <Link to="/" className="sidebar-brand" style={{ padding: 0 }}>
             <span className="mark">
               <Droplet size={16} fill="currentColor" />
@@ -85,7 +85,7 @@ export default function EmergencyRequestPage() {
         <EmergencyCallButtons />
 
         <h2>{t("Emergency blood request")}</h2>
-        <p style={{ color: "var(--text-soft)", fontSize: "0.9rem", marginTop: -8, marginBottom: 10 }}>
+        <p style={{ color: "var(--text-soft)", fontSize: "0.9rem", marginTop: -8, marginBottom: 12 }}>
           <ShieldAlert size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />
           {t("No account needed. Limited to one request per 24 hours from this network to prevent misuse.")}
         </p>
@@ -141,7 +141,7 @@ export default function EmergencyRequestPage() {
               </button>
             ))}
           </div>
-          <p style={{ fontSize: "0.78rem", color: "var(--text-soft)", marginTop: 6 }}>
+          <p style={{ fontSize: "0.78rem", color: "var(--text-soft)", marginTop: 8 }}>
             {t("Critical-urgency requests need hospital verification and aren't available in the quick guest flow —")}{" "}
             <Link to="/signup">{t("create a full account")}</Link> {t("if this is Critical.")}
           </p>
@@ -183,7 +183,7 @@ export default function EmergencyRequestPage() {
           </button>
         </form>
 
-        <p style={{ marginTop: 14, fontSize: "0.85rem", textAlign: "center" }}>
+        <p style={{ marginTop: 16, fontSize: "0.85rem", textAlign: "center" }}>
           {t("Have an account?")} <Link to="/login">{t("Log in")}</Link> {t("instead for full features.")}
         </p>
       </div>

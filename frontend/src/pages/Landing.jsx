@@ -13,6 +13,8 @@ import {
 import { api } from "../api";
 import { useLang } from "../i18n";
 import LanguageToggle from "../components/LanguageToggle";
+import AppearanceButton from "../components/AppearanceSheet";
+import { BrandLockup, BridgeDivider, HeroBridge } from "../components/Brand";
 
 export default function Landing() {
   const { t, lang } = useLang();
@@ -26,17 +28,19 @@ export default function Landing() {
     <div>
       <nav className="landing-nav">
         <div className="sidebar-brand" style={{ padding: 0 }}>
-          <span className="mark">
-            <Droplet size={16} fill="currentColor" />
-          </span>
-          RaktSetu
+          <BrandLockup />
         </div>
-        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-          <Link to="/emergency" style={{ color: "var(--primary)", fontWeight: 700 }}>
+        <div className="nav-links">
+          <Link to="/emergency" className="nav-emergency hide-mobile">
             {t("Emergency — Request Now")}
           </Link>
-          <LanguageToggle />
-          <Link to="/login">{t("Log in")}</Link>
+          <div className="hide-mobile">
+            <LanguageToggle />
+          </div>
+          <AppearanceButton />
+          <Link to="/login" className="btn-outline">
+            {t("Log in")}
+          </Link>
           <Link to="/signup" className="btn-primary">
             {t("Get started")}
           </Link>
@@ -62,7 +66,7 @@ export default function Landing() {
               "Connect nearby compatible donors with people who need blood right now — one trackable request instead of forty frantic phone calls."
             )}
           </p>
-          <div className="cta-row" style={{ marginTop: 26 }}>
+          <div className="cta-row">
             <Link to="/signup" className="btn-primary">
               {t("Get started")}
             </Link>
@@ -70,7 +74,7 @@ export default function Landing() {
               {t("Log in")}
             </Link>
           </div>
-          <Link to="/emergency" style={{ display: "inline-block", marginTop: 14, fontSize: "0.88rem", color: "var(--primary)", fontWeight: 600 }}>
+          <Link to="/emergency" className="hero-link">
             {t("Need blood right now? Request without an account →")}
           </Link>
 
@@ -92,6 +96,8 @@ export default function Landing() {
 
         <HeroArt />
       </div>
+
+      <BridgeDivider />
 
       {/* ---------- The problem ---------- */}
       <section className="landing-section">
@@ -137,6 +143,8 @@ export default function Landing() {
         </div>
       </section>
 
+      <BridgeDivider />
+
       {/* ---------- Differentiation ---------- */}
       <section className="landing-section">
         <div className="section-inner">
@@ -165,14 +173,14 @@ export default function Landing() {
           </p>
           {stats?.hospitalPartners?.count > 0 ? (
             <>
-              <h2 style={{ margin: "0 auto 28px", textAlign: "center" }}>
+              <h2 style={{ margin: "0 auto 32px", textAlign: "center" }}>
                 Trusted by {stats.hospitalPartners.count} verified hospital
                 {stats.hospitalPartners.count === 1 ? "" : "s"} &amp; blood banks
               </h2>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
                 {stats.hospitalPartners.names.map((name) => (
                   <span key={name} className="pill pill-verified" style={{ fontSize: "0.85rem", padding: "8px 16px" }}>
-                    <Building2 size={13} style={{ marginRight: 6, verticalAlign: "middle" }} />
+                    <Building2 size={13} style={{ marginRight: 8, verticalAlign: "middle" }} />
                     {name}
                   </span>
                 ))}
@@ -216,14 +224,7 @@ function HowStep({ icon, title, text }) {
 function HeroArt() {
   return (
     <div className="landing-art">
-      <svg viewBox="0 0 220 220" width="150" height="150">
-        <circle cx="110" cy="110" r="100" fill="#FFFFFF" opacity="0.5" />
-        <path
-          d="M110 40C110 40 60 110 60 148C60 181 82 206 110 206C138 206 160 181 160 148C160 110 110 40 110 40Z"
-          fill="#E6364A"
-        />
-        <path d="M86 150C86 150 86 170 106 176" stroke="#FDE4E8" strokeWidth="6" strokeLinecap="round" fill="none" />
-      </svg>
+      <HeroBridge />
     </div>
   );
 }
