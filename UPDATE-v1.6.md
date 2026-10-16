@@ -13,6 +13,9 @@ Frontend-only update. The backend is unchanged (it is still in the zip so the sy
 - **Faster first load:** each page is a separate small download. First load went from ~998 KB to ~400 KB.
 - Hindi strings added for the new Appearance sheet; Privacy Policy and What's new updated.
 
+## Login fix (included)
+Fixed: after logging in you were sent to "Tell us a bit about you" even though your account already existed ("Profile already exists"). Cause: the app moved to the dashboard before your profile had finished loading, and the page guard mistook that for "no profile". Now login waits for the profile, a slow or failed server reply is retried (and shows a "Try again" screen instead of the sign-up form), and a registered user who lands on that page is sent straight to the dashboard.
+
 ## Honest limits
 - **Not tested on a real phone or a low-end Android.** I tested in a real headless Chromium (desktop + 390px phone size, light/dark/high-contrast, reduced-motion) — 22 click-through checks passed. Please try it on your phone and tell me if anything feels slow; the frosted blur is the first thing I'd turn off.
 - Not testable here: real Firebase login, real MongoDB, real emails. Nothing in those areas changed.

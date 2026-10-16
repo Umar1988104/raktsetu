@@ -15,22 +15,41 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null); // { user, donor } from /api/auth/me
   const [loading, setLoading] = useState(true);
 
+  const [profileError, setProfileError] = useState(false); // true = couldn't reach the server (NOT "no profile")
+
+  // Loads the RaktSetu profile. Only a 404 means "this account has no profile
+  // yet". Any other failure (server waking up, flaky network) is retried and,
+  // if it still fails, flagged — so a hiccup never dumps a registered user
+  // onto the "Tell us a bit about you" page.
   async function refreshProfile() {
-    try {
-      const data = await api.get("/api/auth/me");
-      setProfile(data);
-    } catch {
-      setProfile(null); // not registered yet — frontend will route to /complete-profile
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const data = await api.get("/api/auth/me");
+        setProfile(data);
+        setProfileError(false);
+        return data;
+      } catch (err) {
+        if (err.status === 404) {
+          setProfile(null); // genuinely not registered yet — frontend routes to /complete-profile
+          setProfileError(false);
+          return null;
+        }
+        if (attempt < 2) await new Promise((r) => setTimeout(r, 700 * (attempt + 1)));
+      }
     }
+    setProfileError(true);
+    return null;
   }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
       if (user) {
+        setLoading(true); // hold the app on the loader until the profile is known
         await refreshProfile();
       } else {
         setProfile(null);
+        setProfileError(false);
       }
       setLoading(false);
     });
@@ -44,6 +63,12 @@ export function AuthProvider({ children }) {
 
   async function login(email, password) {
     const cred = await signInWithEmailAndPassword(auth, email, password);
+    // Wait for the profile BEFORE the caller navigates, so the route guard
+    // never sees "logged in, but no profile yet".
+    setFirebaseUser(cred.user);
+    setLoading(true);
+    await refreshProfile();
+    setLoading(false);
     return cred.user;
   }
 
@@ -61,6 +86,7 @@ export function AuthProvider({ children }) {
   const value = {
     firebaseUser,
     profile,
+    profileError,
     loading,
     signup,
     login,

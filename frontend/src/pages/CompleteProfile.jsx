@@ -1,10 +1,10 @@
 import SegmentedControl from "../components/SegmentedControl";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function CompleteProfile() {
-  const { completeProfile } = useAuth();
+  const { completeProfile, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -12,6 +12,9 @@ export default function CompleteProfile() {
   const [hospitalName, setHospitalName] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Already registered (e.g. landed here by mistake)? Go straight to the app.
+  if (profile) return <Navigate to="/dashboard" replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -21,6 +24,11 @@ export default function CompleteProfile() {
       await completeProfile({ name, phone, role, hospitalName });
       navigate("/dashboard");
     } catch (err) {
+      if (/already exists/i.test(err.message)) {
+        await refreshProfile();
+        navigate("/dashboard");
+        return;
+      }
       setError(err.message);
     } finally {
       setBusy(false);
