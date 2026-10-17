@@ -61,6 +61,25 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <div className="card">
+          <h3>Your RaktSetu card and QR code</h3>
+          <p>
+            Each account (and each family member) gets a card with a random ID. Anyone who has the
+            ID, or scans the QR code, can open a public page showing only what you allow. By
+            default that is your first name and initial, blood group, trust badge and Verified
+            mark — for a family member the name is off by default. You can switch any of these off,
+            add the year you joined, or an optional yes/no for “eligible to donate today”.
+          </p>
+          <p>
+            Your phone number, email, address, photo and emergency contact are never shown on the
+            public page. The emergency contact appears only on the back of your own card and the
+            image you download. You can hide the card completely, or create a new ID, at any time —
+            the old ID stops working immediately. The page is not listed in search engines, and
+            repeated wrong guesses are blocked. Hospital partners can look a donor up by card ID to
+            verify them. Guests do not get a card.
+          </p>
+        </div>
+
+        <div className="card">
           <h3>Display settings stored on your device</h3>
           <p>
             Your language, theme (light / dark), contrast and text-size choices are saved in your

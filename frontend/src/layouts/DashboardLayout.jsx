@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { Outlet, NavLink, useNavigate, useLocation, Link } from "react-router-dom";
 import * as m from "motion/react-m";
-import { LayoutDashboard, PlusCircle, ClipboardList, Users, Bell, UserRound, LogOut, ShieldCheck, Menu, X, Siren, Tent, Sparkles, BarChart3, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, PlusCircle, ClipboardList, Users, Bell, UserRound, LogOut, ShieldCheck, Menu, X, Siren, Tent, Sparkles, BarChart3, ShieldAlert, CreditCard } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useLang } from "../i18n";
 import LanguageToggle from "../components/LanguageToggle";
@@ -179,6 +179,11 @@ export default function DashboardLayout() {
           {role !== "hospital" && (
             <NavItem to="/notifications" icon={<Bell size={18} />}>
               {t("Notifications")}
+            </NavItem>
+          )}
+          {!profile?.user?.isGuest && (
+            <NavItem to="/card" icon={<CreditCard size={18} />}>
+              {t("My Card")}
             </NavItem>
           )}
           <NavItem to="/profile" icon={<UserRound size={18} />}>

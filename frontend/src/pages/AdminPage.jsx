@@ -5,6 +5,7 @@ import { api } from "../api";
 import { useConfirm, useToast } from "../components/UiFeedback";
 import StatusPill from "../components/StatusPill";
 import Skeleton from "../components/Skeleton";
+import Switch from "../components/Switch";
 
 // The server enforces admin access; this page just doesn't show itself to
 // anyone else.
@@ -78,6 +79,8 @@ export default function AdminPage() {
           <Stat icon={<Ban size={18} />} color="green" value={overview.throttledUsers} label="Blocked accounts" />
         </div>
       )}
+
+      <HospitalPartners />
 
       <div className="card">
         <h3>Reported requests</h3>
@@ -193,6 +196,64 @@ function Stat({ icon, color, value, label }) {
       </div>
       <div className="stat-value">{value}</div>
       <div className="stat-label">{label}</div>
+    </div>
+  );
+}
+
+// Anyone can sign up as a hospital with any name, so "Verified Partner" on a
+// card only appears after an admin has checked the hospital outside the app
+// (call the number, check the website, ask for a document).
+function HospitalPartners() {
+  const askConfirm = useConfirm();
+  const toast = useToast();
+  const [hospitals, setHospitals] = useState(null);
+
+  useEffect(() => {
+    api.get("/api/admin/hospitals").then((d) => setHospitals(d.hospitals)).catch((err) => toast(err.message, "error"));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function setVerified(h, verified) {
+    const ok = await askConfirm({
+      title: verified ? `Mark ${h.hospitalName || h.name} as a verified partner?` : "Remove verified-partner status?",
+      message: verified
+        ? "Their partner card will say “Verified Partner” and families will rely on it. Only do this after you have checked the hospital yourself."
+        : "Their card will go back to “Pending verification”.",
+      confirmLabel: verified ? "Mark verified" : "Remove",
+      tone: verified ? "default" : "danger",
+    });
+    if (!ok) return;
+    try {
+      await api.patch(`/api/admin/hospitals/${h._id}/partner-verified`, { verified });
+      setHospitals((list) => list.map((x) => (x._id === h._id ? { ...x, partnerVerified: verified } : x)));
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  return (
+    <div className="card">
+      <h3>Hospital partners</h3>
+      <p className="status" style={{ marginTop: 0, marginBottom: 16 }}>
+        Anyone can register a hospital account. Verify one only after checking it outside the app.
+      </p>
+      {hospitals === null ? (
+        <Skeleton rows={2} />
+      ) : hospitals.length === 0 ? (
+        <p className="empty-note">No hospital accounts yet.</p>
+      ) : (
+        hospitals.map((h) => (
+          <div key={h._id} className="list-row">
+            <div>
+              <div className="row-title">{h.hospitalName || h.name}</div>
+              <div className="row-sub">{h.name} · {h.phone}</div>
+            </div>
+            <div className="switch-row" style={{ gap: 8 }}>
+              <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>Verified partner</span>
+              <Switch checked={h.partnerVerified} onChange={(v) => setVerified(h, v)} label={`Verified partner: ${h.hospitalName || h.name}`} />
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 }

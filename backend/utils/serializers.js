@@ -154,8 +154,78 @@ function serializeMatch(d, { accepted }) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Member cards (v1.7)
+// ---------------------------------------------------------------------------
+
+// The owner looking at their own card. Includes their own emergency contact
+// and photo (nobody else ever gets these).
+function serializeOwnCard(view) {
+  const c = view.card;
+  const base = {
+    cardId: c.cardId,
+    kind: view.kind,
+    isSelf: view.isSelf,
+    name: view.name,
+    shortName: shortName(view.name),
+    memberSince: view.memberSince,
+    settings: {
+      hidden: !!c.hidden,
+      show: {
+        name: c.show?.name !== false,
+        bloodGroup: c.show?.bloodGroup !== false,
+        tier: c.show?.tier !== false,
+        verified: c.show?.verified !== false,
+        memberSince: !!c.show?.memberSince,
+        eligibleToday: !!c.show?.eligibleToday,
+      },
+    },
+    regeneratedAt: c.regeneratedAt || null,
+  };
+  if (view.kind === "partner") {
+    return { ...base, hospitalName: view.hospitalName, partnerVerified: view.partnerVerified };
+  }
+  return {
+    ...base,
+    relation: view.relation,
+    bloodGroup: view.bloodGroup,
+    tier: view.tier,
+    verified: view.verified,
+    hasDonorProfile: view.hasDonorProfile,
+    stamps: (view.stamps || []).map((d) => ({ date: d })),
+    nextEligibleDate: view.nextEligibleDate,
+    eligibleToday: view.eligibleToday,
+    photo: view.photo,
+    emergencyContact: {
+      enabled: !!c.emergencyContact?.enabled,
+      name: c.emergencyContact?.name || "",
+      phone: c.emergencyContact?.phone || "",
+    },
+  };
+}
+
+// What anyone holding the card ID may see. Every field is gated by an owner
+// toggle; nothing else exists in this response — no phone, email, address,
+// account id, family names, emergency contact, photo or exact dates.
+function serializePublicCard(view) {
+  const c = view.card;
+  const show = c.show || {};
+  if (view.kind === "partner") {
+    return { kind: "partner", hospitalName: view.hospitalName, verifiedPartner: !!view.partnerVerified };
+  }
+  const out = { kind: "member" };
+  if (show.name !== false) out.name = shortName(view.name);
+  if (show.bloodGroup !== false && view.bloodGroup) out.bloodGroup = view.bloodGroup;
+  if (show.tier !== false) out.tier = view.tier;
+  if (show.verified !== false) out.verified = !!view.verified;
+  if (show.memberSince && view.memberSince) out.memberSinceYear = new Date(view.memberSince).getFullYear();
+  if (show.eligibleToday && view.eligibleToday !== null) out.eligibleToday = !!view.eligibleToday;
+  return out;
+}
+
 module.exports = {
   shortName, coarsen,
   serializeDonor, serializeSeekerForDonor, serializeContactedDonor,
   serializeRequestForOwner, serializeRequestForHospital, serializeMatch,
+  serializeOwnCard, serializePublicCard,
 };

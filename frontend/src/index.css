@@ -882,6 +882,70 @@ form button { margin-top: var(--sp-2); width: 100%; min-height: var(--tap); }
   html[data-sheet] #root { transform: none; }
 }
 
+
+/* ---------- 9. RaktSetu member card (v1.7) ---------- */
+.card-layout { display: grid; grid-template-columns: minmax(0, 380px) 1fr; gap: var(--sp-4); align-items: start; }
+.card-col { min-width: 0; }
+.card-actions { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+.preview-chips { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+.public-group { font-size: 4.5rem; font-weight: 800; color: var(--brand-text); line-height: 1; margin: var(--sp-2) 0 var(--sp-1); letter-spacing: -0.03em; }
+
+.wallet { position: relative; width: 100%; max-width: 380px; margin-bottom: var(--sp-3); clip-path: inset(-24px -24px 0 -24px); }
+.wallet-slot { position: absolute; left: 0; right: 0; top: 0; cursor: pointer; border-radius: 20px; touch-action: manipulation; }
+.wallet-slot:focus-visible { outline-offset: 4px; }
+.flip-scene { width: 100%; height: 100%; perspective: 1200px; }
+.flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+.rs-card.flip-face { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.flip-back { transform: rotateY(180deg); }
+
+/* Card colours are fixed (not themed): a card looks like a card in dark mode too. */
+.rs-card { position: relative; border-radius: 20px; overflow: hidden; color: #fff; container-type: inline-size; box-shadow: var(--shadow-md); }
+.rs-front, .rs-back { position: absolute; inset: 0; padding: 6cqw; display: flex; flex-direction: column; justify-content: space-between; }
+.rs-top { display: flex; justify-content: space-between; align-items: center; }
+.rs-brand { display: inline-flex; align-items: center; gap: 2cqw; font-weight: 800; font-size: 4.6cqw; letter-spacing: -0.01em; }
+.rs-brand svg { width: 6.6cqw; height: 6.6cqw; }
+.rs-badge { display: inline-flex; align-items: center; gap: 1cqw; font-size: 3.3cqw; font-weight: 700; padding: 1.2cqw 3cqw; border-radius: 999px; background: rgba(255, 255, 255, 0.2); }
+.rs-badge.pending { background: rgba(255, 255, 255, 0.12); }
+.rs-mid { display: flex; align-items: flex-end; justify-content: space-between; gap: 3cqw; }
+.rs-who { display: flex; align-items: center; gap: 3cqw; min-width: 0; }
+.rs-photo { width: 14cqw; height: 14cqw; border-radius: 50%; object-fit: cover; flex: none; background: rgba(255, 255, 255, 0.22); }
+.rs-initial { display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 6.5cqw; }
+.rs-name { display: flex; align-items: center; flex-wrap: wrap; gap: 1.5cqw; font-weight: 700; font-size: 5.2cqw; line-height: 1.15; min-width: 0; }
+.rs-name svg { width: 5cqw; height: 5cqw; flex: none; }
+.rs-name small { flex-basis: 100%; font-weight: 500; font-size: 3.3cqw; opacity: 0.8; }
+.rs-group { font-size: 16cqw; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+.rs-group svg { width: 12cqw; height: 12cqw; opacity: 0.6; }
+.rs-hospital { font-size: 7cqw; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
+.rs-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+.rs-id { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 700; font-size: 4.6cqw; letter-spacing: 0.06em; }
+.rs-since { font-size: 3.2cqw; opacity: 0.85; margin-top: 1cqw; }
+.rs-qr { width: 22cqw; height: 22cqw; border-radius: 2.2cqw; background: #fff; padding: 1cqw; }
+
+/* Tier finishes: New = matte, Trusted = gradient, Pillar = subtle metallic shimmer */
+.tier-new { background: #2B5C61; }
+.tier-trusted { background: linear-gradient(135deg, #0F766E 0%, #0E4F6B 60%, #1B3A8A 100%); }
+.tier-pillar { background: linear-gradient(135deg, #1b2a32 0%, #3d4e5a 40%, #1b2a32 70%, #5b6d79 100%); }
+.tier-pillar::after {
+  content: ""; position: absolute; inset: -20% -60%; pointer-events: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.2) 50%, transparent 58%);
+  transform: translateX(-60%); animation: card-sheen 7s ease-in-out infinite;
+}
+@keyframes card-sheen { 0%, 55% { transform: translateX(-60%); } 100% { transform: translateX(60%); } }
+.tier-partner { background: linear-gradient(135deg, #0B4A6B 0%, #0F766E 100%); }
+
+.rs-back { padding: 0 6cqw 4cqw; justify-content: flex-start; }
+.rs-stripe { height: 8cqw; background: rgba(0, 0, 0, 0.55); margin: 4cqw -6cqw 3cqw; }
+.rs-stamps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2cqw; }
+.rs-stamp { width: 12.5cqw; height: 12.5cqw; justify-self: center; border-radius: 50%; border: 0.5cqw dashed rgba(255, 255, 255, 0.5); display: flex; align-items: center; justify-content: center; color: #0B1F2A; }
+.rs-stamp.filled { background: rgba(255, 255, 255, 0.92); border-color: transparent; }
+.rs-stamp svg { width: 6cqw; height: 6cqw; }
+.rs-line { font-size: 3.2cqw; font-weight: 600; margin-top: 2cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rs-note { font-size: 4cqw; margin: 0; }
+.rs-disclaimer { position: absolute; left: 6cqw; right: 6cqw; bottom: 3.5cqw; margin: 0; font-size: 2.5cqw; opacity: 0.8; }
+
+@media (max-width: 900px) { .card-layout { grid-template-columns: 1fr; gap: var(--sp-2); } }
+@media (prefers-reduced-motion: reduce) { .tier-pillar::after { animation: none; opacity: 0.4; transform: translateX(0); } }
+
 /* Visually hidden, still read by screen readers */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 @media (hover: hover) { .switch:hover:not(:disabled) { background: transparent; } }

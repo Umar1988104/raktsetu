@@ -32,6 +32,8 @@ const CertificatePage = lazy(() => import("./pages/CertificatePage"));
 const UpdatesPage = lazy(() => import("./pages/UpdatesPage"));
 const ImpactPage = lazy(() => import("./pages/ImpactPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
+const MyCardPage = lazy(() => import("./pages/MyCardPage"));
+const PublicCardPage = lazy(() => import("./pages/PublicCardPage"));
 
 export default function App() {
   return (
@@ -51,6 +53,7 @@ export default function App() {
             <Route path="/impact" element={<ImpactPage />} />
           </Route>
           <Route path="/track/:token" element={<TrackPage />} />
+          <Route path="/card/:id" element={<PublicCardPage />} />
           <Route
             path="/certificate/:donorId/:entryId"
             element={
@@ -86,6 +89,7 @@ export default function App() {
             <Route path="/verify" element={<HospitalVerifyPage />} />
             <Route path="/updates" element={<UpdatesPage />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/card" element={<MyCardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Routes>

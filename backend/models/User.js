@@ -39,6 +39,9 @@ const userSchema = new mongoose.Schema(
     // Only set for role: "hospital" — the partner hospital/blood-bank's display name,
     // matched (case-insensitively) against a request's `hospital` field to verify it.
     hospitalName: { type: String, trim: true },
+    // Set ONLY by an admin (v1.7). Anyone can register a hospital account, so
+    // the "Verified Partner" card must not be based on self-declared data.
+    partnerVerified: { type: Boolean, default: false },
     // One login can manage multiple people (v1.1) — a family member can be the
     // patient on a request, or have their own Donor profile under this account.
     familyMembers: [familyMemberSchema],

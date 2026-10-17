@@ -2,6 +2,18 @@
 // invented dates. Edit freely as you ship more.
 export const CHANGELOG = [
   {
+    version: "v1.7",
+    title: "The RaktSetu Card",
+    items: [
+      "Every account gets a member card with a QR code: your blood group, trust badge, Verified mark and donation stamps",
+      "Family members get their own cards; they stack like a wallet — tap one to lift it out, tap again to flip it",
+      "You choose what the QR page shows (default: first name, blood group, badge, Verified). Hide the card or create a new ID any time",
+      "Download your card as an image; optional emergency contact is printed on the back only",
+      "Hospitals can look a donor up by card ID instead of phone number",
+      "Hospital partner cards say “Verified Partner” only after an admin has checked the hospital",
+    ],
+  },
+  {
     version: "v1.6",
     title: "Calmer design & smoother feel",
     items: [

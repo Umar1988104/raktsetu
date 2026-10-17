@@ -158,6 +158,7 @@ const HI = {
   "Main navigation": "मुख्य नेविगेशन",
   "Open menu": "मेनू खोलें",
   "Close menu": "मेनू बंद करें",
+  "My Card": "मेरा कार्ड",
 };
 
 const LanguageContext = createContext({ lang: "en", setLang: () => {}, t: (s) => s });

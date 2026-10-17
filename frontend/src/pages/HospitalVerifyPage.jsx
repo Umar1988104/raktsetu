@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Skeleton from "../components/Skeleton";
-import { ShieldCheck, Search, Droplet } from "lucide-react";
+import { ShieldCheck, Search, Droplet, CreditCard } from "lucide-react";
 import { api } from "../api";
 
 export default function HospitalVerifyPage() {
@@ -11,6 +11,8 @@ export default function HospitalVerifyPage() {
   const [query, setQuery] = useState("");
   const [donors, setDonors] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [cardId, setCardId] = useState("");
+  const [cardError, setCardError] = useState("");
 
   function loadPending() {
     api
@@ -39,6 +41,22 @@ export default function HospitalVerifyPage() {
     try {
       const data = await api.get(`/api/donors/search?q=${encodeURIComponent(query)}`);
       setDonors(data.donors);
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  // More private than searching by phone: the donor shows their card ID.
+  async function lookupCard(e) {
+    e.preventDefault();
+    setCardError("");
+    setSearching(true);
+    try {
+      const data = await api.get(`/api/cards/lookup/${encodeURIComponent(cardId.trim().toUpperCase())}`);
+      setDonors(data.donors || []);
+    } catch (err) {
+      setDonors([]);
+      setCardError(err.status === 404 ? "No card found with that ID. Check it and try again." : err.message);
     } finally {
       setSearching(false);
     }
@@ -107,6 +125,20 @@ export default function HospitalVerifyPage() {
             <Search size={14} /> Search
           </button>
         </form>
+
+        <form onSubmit={lookupCard} className="filter-row" style={{ marginBottom: 16 }}>
+          <input
+            placeholder="Or look up by card ID, e.g. RS-7K4M-9QX2"
+            aria-label="Card ID"
+            value={cardId}
+            onChange={(e) => setCardId(e.target.value)}
+            autoCapitalize="characters"
+          />
+          <button type="submit" className="secondary" disabled={searching || cardId.trim().length < 6}>
+            <CreditCard size={14} /> Look up
+          </button>
+        </form>
+        {cardError && <p className="error">{cardError}</p>}
 
         {donors.map((d) => (
           <div key={d._id} className="donor-card">

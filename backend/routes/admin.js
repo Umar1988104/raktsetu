@@ -134,4 +134,41 @@ router.post("/users/:id/unthrottle", async (req, res) => {
   }
 });
 
+// Hospital accounts, so an admin can mark genuine partners. Anyone can sign up
+// with role "hospital" and any name, so "Verified Partner" on a card only
+// appears after an admin has checked the hospital outside the app.
+router.get("/hospitals", async (req, res) => {
+  try {
+    const hospitals = await User.find({ role: "hospital" }).sort({ createdAt: -1 }).limit(100);
+    res.json({
+      hospitals: hospitals.map((h) => ({
+        _id: h._id,
+        name: h.name,
+        hospitalName: h.hospitalName || null,
+        phone: h.phone,
+        partnerVerified: !!h.partnerVerified,
+        createdAt: h.createdAt,
+      })),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load hospital accounts" });
+  }
+});
+
+router.patch("/hospitals/:id/partner-verified", async (req, res) => {
+  try {
+    if (!isId(req.params.id)) return res.status(404).json({ error: "Hospital account not found" });
+    if (typeof req.body?.verified !== "boolean") return res.status(400).json({ error: "verified (true/false) is required" });
+    const hospital = await User.findOne({ _id: req.params.id, role: "hospital" });
+    if (!hospital) return res.status(404).json({ error: "Hospital account not found" });
+    hospital.partnerVerified = req.body.verified;
+    await hospital.save();
+    res.json({ hospital: { _id: hospital._id, hospitalName: hospital.hospitalName || null, partnerVerified: hospital.partnerVerified } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update hospital" });
+  }
+});
+
 module.exports = router;

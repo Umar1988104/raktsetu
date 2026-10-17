@@ -17,6 +17,7 @@ const requestRoutes = require("./routes/requests");
 const statsRoutes = require("./routes/stats");
 const campsRoutes = require("./routes/camps");
 const adminRoutes = require("./routes/admin");
+const cardRoutes = require("./routes/cards");
 const { backfillLifecycleFields, startMaintenanceLoop } = require("./utils/lifecycle");
 const Donor = require("./models/Donor");
 
@@ -42,6 +43,7 @@ app.use("/api/requests", requestRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/camps", campsRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/cards", cardRoutes);
 
 // Fallback error handler
 app.use((err, req, res, next) => {
