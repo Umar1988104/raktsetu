@@ -74,6 +74,30 @@ router.post("/guest-register", verifyToken, async (req, res) => {
   }
 });
 
+// A guest saves their account (v1.8). The frontend has already linked an
+// email + password to the anonymous Firebase session and refreshed the token,
+// so the token now carries the email. We attach it to the same RaktSetu
+// profile — requests, history and everything else stay exactly as they were.
+router.post("/upgrade-guest", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ error: "No RaktSetu profile yet" });
+    if (!user.isGuest) return res.status(400).json({ error: "This is already a full account" });
+    if (!req.user.email) return res.status(400).json({ error: "Add an email and password to your session first" });
+
+    const taken = await User.findOne({ email: req.user.email.toLowerCase(), _id: { $ne: user._id } });
+    if (taken) return res.status(409).json({ error: "That email already belongs to another RaktSetu account" });
+
+    user.email = req.user.email;
+    user.isGuest = false;
+    await user.save();
+    res.json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to save your account" });
+  }
+});
+
 // Returns the logged-in user's profile, plus every donor profile under this
 // account (the account holder's own, and/or one per family member who donates).
 router.get("/me", verifyToken, async (req, res) => {

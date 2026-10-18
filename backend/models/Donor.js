@@ -23,6 +23,9 @@ const donorSchema = new mongoose.Schema(
     sex: { type: String, enum: ["male", "female"], default: null },
     isDemo: { type: Boolean, default: false, index: true }, // sample data from seed-demo.js
     available: { type: Boolean, default: true },
+    // v1.8: true = not shown on the open browse list or the seeker's match map
+    // (still matched and notified; visible to a seeker only after accepting).
+    hideFromMap: { type: Boolean, default: false },
     verified: { type: Boolean, default: false },
     fcmTokens: [{ type: String }], // registered browser push tokens, if push is set up
     donationHistory: [

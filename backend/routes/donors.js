@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Donor = require("../models/Donor");
 const Request = require("../models/Request");
 const verifyToken = require("../middleware/verifyToken");
+const { emailGate, hospitalGate, send } = require("../middleware/gates");
 const { resolveDonorContact } = require("../utils/familyHelpers");
 const { getNextEligibleDate } = require("../utils/eligibility");
 const { escapeRegex } = require("../utils/text");
@@ -26,6 +27,8 @@ router.post("/", verifyToken, async (req, res) => {
     if (!user || user.role !== "donor") {
       return res.status(403).json({ error: "Only accounts registered with role 'donor' can create a donor profile" });
     }
+    const emailBlock = emailGate(req);
+    if (emailBlock) return send(res, emailBlock);
 
     const { bloodGroup, area, lat, lng, available, familyMemberId, sex } = req.body;
     if (!bloodGroup || !area || lat === undefined || lng === undefined) {
@@ -69,6 +72,8 @@ router.patch("/:id/availability", verifyToken, async (req, res) => {
 
     const wantsAvailable = Boolean(req.body.available);
     if (wantsAvailable) {
+      const emailBlock = emailGate(req);
+      if (emailBlock) return send(res, emailBlock);
       const nextEligible = getNextEligibleDate(donor);
       if (nextEligible) {
         return res.status(400).json({
@@ -96,7 +101,7 @@ router.patch("/:id/availability", verifyToken, async (req, res) => {
 router.get("/", verifyToken, async (req, res) => {
   try {
     const { bloodGroup, area, availableOnly } = req.query;
-    const filter = {};
+    const filter = { hideFromMap: { $ne: true } }; // donors who chose to stay off the map are still matched, just not browsable
     if (bloodGroup) filter.bloodGroup = String(bloodGroup);
     if (area) filter.area = { $regex: escapeRegex(area), $options: "i" };
     if (availableOnly === "true") filter.available = true;
@@ -106,6 +111,28 @@ router.get("/", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch donors" });
+  }
+});
+
+// A donor can stay OFF the open browse list and the seeker's match map while
+// still being matched and notified for real requests. They show up to a
+// seeker only after accepting.
+router.patch("/:id/map-visibility", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!user) return res.status(404).json({ error: "Donor profile not found" });
+    if (!isId(req.params.id)) return res.status(404).json({ error: "Donor profile not found" });
+    if (typeof req.body.hidden !== "boolean") return res.status(400).json({ error: "hidden (true/false) is required" });
+    const donor = await Donor.findOne({ _id: req.params.id, user: user._id });
+    if (!donor) return res.status(404).json({ error: "Donor profile not found" });
+
+    donor.hideFromMap = req.body.hidden;
+    await donor.save();
+    await donor.populate("user", USER_FIELDS);
+    res.json({ donor: serializeDonor(donor, "self") });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update map visibility" });
   }
 });
 
@@ -219,9 +246,8 @@ router.get("/:id/donations", verifyToken, async (req, res) => {
 router.get("/search", verifyToken, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
-    if (!user || user.role !== "hospital") {
-      return res.status(403).json({ error: "Only hospital accounts can search donors to verify" });
-    }
+    const block = hospitalGate(req, user);
+    if (block) return send(res, block);
     const q = String(req.query.q || "").trim();
     if (q.length < 2) return res.json({ donors: [] });
 
@@ -245,7 +271,8 @@ router.get("/search", verifyToken, async (req, res) => {
 router.patch("/:id/verify", verifyToken, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
-    if (!user || user.role !== "hospital") return res.status(403).json({ error: "Only hospital accounts can verify donors" });
+    const block = hospitalGate(req, user);
+    if (block) return send(res, block);
     if (!isId(req.params.id)) return res.status(404).json({ error: "Donor not found" });
 
     const donor = await Donor.findByIdAndUpdate(req.params.id, { verified: true }, { new: true }).populate("user", USER_FIELDS);

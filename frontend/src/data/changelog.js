@@ -2,7 +2,21 @@
 // invented dates. Edit freely as you ship more.
 export const CHANGELOG = [
   {
+    version: "v1.8",
+    date: "2026-10-17",
+    title: "Trust & safety",
+    items: [
+      "Hospital tools now unlock only after an admin approves the hospital",
+      "Email verification: needed to donate, accept requests or act as a hospital (raising a request never needs it)",
+      "Guests can save their account with an email and password and keep their requests",
+      "Donors can stay off the map and still be matched; “self-declared” notes on blood group",
+      "Server protection against spam and password guessing; updated Privacy Policy",
+      "Admins get an action log and an anonymous statistics download",
+    ],
+  },
+  {
     version: "v1.7",
+    date: "2026-10-17",
     title: "The RaktSetu Card",
     items: [
       "Every account gets a member card with a QR code: your blood group, trust badge, Verified mark and donation stamps",
@@ -15,6 +29,7 @@ export const CHANGELOG = [
   },
   {
     version: "v1.6",
+    date: "2026-10-16",
     title: "Calmer design & smoother feel",
     items: [
       "New look: a calm deep-teal brand colour, with red kept only for urgent things (SOS, Critical, errors)",

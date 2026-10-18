@@ -1,0 +1,9 @@
+{
+  "name": "raktsetu-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Browser smoke tests for RaktSetu. Own dependencies, so they never touch the app's package.json.",
+  "scripts": { "test": "node run.mjs" },
+  "dependencies": { "puppeteer-core": "^24.0.0" },
+  "optionalDependencies": { "@sparticuz/chromium": "^138.0.0" }
+}

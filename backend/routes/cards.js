@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Donor = require("../models/Donor");
 const Card = require("../models/Card");
 const verifyToken = require("../middleware/verifyToken");
+const { hospitalGate, send } = require("../middleware/gates");
 const { generateCardId, normalizeCardId } = require("../utils/cardId");
 const { createLimiter } = require("../utils/rateLimit");
 const { buildCardView } = require("../utils/cardView");
@@ -198,7 +199,8 @@ router.get("/public/:cardId", async (req, res) => {
 router.get("/lookup/:cardId", verifyToken, async (req, res) => {
   try {
     const user = await User.findOne({ firebaseUid: req.user.uid });
-    if (!user || user.role !== "hospital") return res.status(403).json({ error: "Only hospital accounts can look up cards" });
+    const block = hospitalGate(req, user);
+    if (block) return send(res, block);
 
     const gen = hospitalLimiter.hit(req.user.uid);
     if (!gen.allowed) return res.status(429).set("Retry-After", String(gen.retryAfterSec)).json({ error: "Too many lookups. Please wait a moment." });

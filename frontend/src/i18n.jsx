@@ -159,6 +159,12 @@ const HI = {
   "Open menu": "मेनू खोलें",
   "Close menu": "मेनू बंद करें",
   "My Card": "मेरा कार्ड",
+  // v1.8 (needs native-speaker review)
+  "Save account": "खाता सहेजें",
+  "Verify your email.": "अपना ईमेल सत्यापित करें।",
+  "Resend email": "ईमेल दोबारा भेजें",
+  "I've verified": "मैंने सत्यापित कर लिया",
+  "Show me on the map": "मुझे मानचित्र पर दिखाएँ",
 };
 
 const LanguageContext = createContext({ lang: "en", setLang: () => {}, t: (s) => s });

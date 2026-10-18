@@ -2,6 +2,7 @@ const express = require("express");
 const User = require("../models/User");
 const Camp = require("../models/Camp");
 const verifyToken = require("../middleware/verifyToken");
+const { hospitalGate, send } = require("../middleware/gates");
 
 const router = express.Router();
 
@@ -33,9 +34,8 @@ router.get("/", async (req, res) => {
 router.post("/", verifyToken, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
-    if (!user || user.role !== "hospital") {
-      return res.status(403).json({ error: "Only hospital accounts can post camps" });
-    }
+    const block = hospitalGate(req, user);
+    if (block) return send(res, block);
 
     const { name, date, address, area, lat, lng, accessibility } = req.body;
     if (!name || !date || !address || !area || lat === undefined || lng === undefined) {

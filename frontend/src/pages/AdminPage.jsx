@@ -81,6 +81,7 @@ export default function AdminPage() {
       )}
 
       <HospitalPartners />
+      <AuditAndExport />
 
       <div className="card">
         <h3>Reported requests</h3>
@@ -251,6 +252,61 @@ function HospitalPartners() {
               <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>Verified partner</span>
               <Switch checked={h.partnerVerified} onChange={(v) => setVerified(h, v)} label={`Verified partner: ${h.hospitalName || h.name}`} />
             </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+// Who did what (admin actions only) + an anonymous statistics download.
+function AuditAndExport() {
+  const toast = useToast();
+  const [entries, setEntries] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    api.get("/api/admin/audit").then((d) => setEntries(d.entries)).catch((err) => toast(err.message, "error"));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function downloadStats() {
+    setBusy(true);
+    try {
+      const csv = await api.getText("/api/admin/stats-export");
+      const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "raktsetu-stats.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      api.get("/api/admin/audit").then((d) => setEntries(d.entries)).catch(() => {});
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
+        <h3 style={{ margin: 0 }}>Admin action log</h3>
+        <button type="button" className="ghost" onClick={downloadStats} disabled={busy}>
+          Download anonymous stats (CSV)
+        </button>
+      </div>
+      <p className="status" style={{ marginTop: 0 }}>Counts only. Any group smaller than 5 is shown as “&lt;5”. The log keeps no personal details and is deleted after a year.</p>
+      {entries === null ? (
+        <Skeleton rows={2} />
+      ) : entries.length === 0 ? (
+        <p className="empty-note">No admin actions yet.</p>
+      ) : (
+        entries.slice(0, 20).map((e) => (
+          <div key={e._id} className="audit-row">
+            <span>{e.summary || e.action}</span>
+            <span className="row-time">{new Date(e.at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         ))
       )}

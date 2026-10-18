@@ -152,8 +152,25 @@ function DonorProfileCard({ donor, onSaved }) {
   // if the server says no, they snap back and you're told why.
   const [optimistic, setOptimistic] = useState(null);
   const available = optimistic ?? donor.available;
+  // v1.8: stay off the open map / browse list but still be matched and notified.
+  const [mapOptimistic, setMapOptimistic] = useState(null);
+  const onMap = mapOptimistic ?? !donor.hideFromMap;
 
   useEffect(() => setOptimistic(null), [donor.available]);
+  useEffect(() => setMapOptimistic(null), [donor.hideFromMap]);
+
+  async function setOnMap(show) {
+    setError("");
+    setMapOptimistic(show);
+    try {
+      await api.patch(`/api/donors/${donor._id}/map-visibility`, { hidden: !show });
+      onSaved();
+    } catch (err) {
+      setMapOptimistic(null);
+      setError(err.message);
+      toast(err.message, "error");
+    }
+  }
 
   async function turnOff() {
     setError("");
@@ -240,12 +257,18 @@ function DonorProfileCard({ donor, onSaved }) {
           {error && <p className="error" style={{ marginTop: 8 }}>{error}</p>}
         </div>
       </div>
-      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-end" }}>
         <div className="switch-row" style={{ gap: 12 }}>
           <span id={`avail-${donor._id}`} style={{ fontSize: "0.85rem", fontWeight: 600 }}>
             Available to donate
           </span>
           <Switch checked={available} onChange={onToggle} label="Available to donate" />
+        </div>
+        <div className="switch-row" style={{ gap: 12 }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600 }} title="Off = you're still matched and notified, but only requesters you accept appear to see you.">
+            Show me on the map
+          </span>
+          <Switch checked={onMap} onChange={setOnMap} label="Show me on the map" />
         </div>
         <button className="ghost" onClick={() => setEditing(true)}>
           Edit
@@ -310,6 +333,8 @@ function DonorProfileForm({ existing, familyMemberId, label, onDone, onCancel })
           </option>
         ))}
       </select>
+
+      <p className="status" style={{ marginTop: 4 }}>Self-declared — RaktSetu can't test blood. Hospital partners can mark you “Verified”.</p>
 
       <label>Biological sex (optional)</label>
       <select value={form.sex} onChange={(e) => setForm({ ...form, sex: e.target.value })}>

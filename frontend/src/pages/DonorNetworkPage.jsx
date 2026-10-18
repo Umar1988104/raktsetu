@@ -1,4 +1,5 @@
 import Switch from "../components/Switch";
+import SelfDeclaredNote from "../components/SelfDeclaredNote";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, Lock } from "lucide-react";
@@ -74,6 +75,7 @@ export default function DonorNetworkPage() {
         </div>
       </form>
 
+      <SelfDeclaredNote />
       <div className="card">
         {!searched ? (
           <p className="empty-note">Use the filters above and click Search.</p>

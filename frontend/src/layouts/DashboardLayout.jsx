@@ -9,6 +9,7 @@ import AppearanceButton from "../components/AppearanceSheet";
 import { BrandLockup, BridgeLoader } from "../components/Brand";
 import { useConfirm, useToast } from "../components/UiFeedback";
 import { PageTransition } from "../motion/kit";
+import AccountBanners from "../components/AccountBanners";
 import { SPRING_SNAPPY } from "../motion/springs";
 
 // One sidebar link. The highlight is a shared element: it slides from the old
@@ -224,6 +225,7 @@ export default function DashboardLayout() {
           </div>
         </header>
         <main className="content" ref={mainRef}>
+          <AccountBanners />
           <Suspense fallback={<BridgeLoader />}>
             <PageTransition>
               <Outlet />

@@ -10,6 +10,7 @@ import { api } from "../api";
 import { UrgencyPill } from "../components/StatusPill";
 import ReadAloudButton from "../components/ReadAloudButton";
 import ShareRequestButton from "../components/ShareRequestButton";
+import SelfDeclaredNote from "../components/SelfDeclaredNote";
 
 const STAGES = ["Searching", "Contacted", "Confirmed", "Fulfilled"];
 const TIER_CLASS = { New: "pill-expired", Trusted: "pill-confirmed", Pillar: "pill-verified" };
@@ -272,6 +273,7 @@ export default function RequestStatusPage() {
 
         <div className="card">
           <h3>Nearby compatible donors</h3>
+          <SelfDeclaredNote />
           {!matchData ? (
             <Skeleton rows={2} />
           ) : matchData.matches.length === 0 ? (

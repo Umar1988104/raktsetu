@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import Skeleton from "../components/Skeleton";
 import { ShieldCheck, Search, Droplet, CreditCard } from "lucide-react";
 import { api } from "../api";
+import { useAuth } from "../context/AuthContext";
+import { Hourglass } from "lucide-react";
 
 export default function HospitalVerifyPage() {
+  const { profile } = useAuth();
   const [pending, setPending] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState("");
@@ -21,7 +24,10 @@ export default function HospitalVerifyPage() {
       .catch((err) => setError(err.message));
   }
 
-  useEffect(loadPending, []);
+  const approved = !!profile?.user?.partnerVerified;
+  useEffect(() => {
+    if (approved) loadPending();
+  }, [approved]);
 
   async function verifyRequest(id) {
     setBusyId(id);
@@ -72,6 +78,26 @@ export default function HospitalVerifyPage() {
     } finally {
       setBusyId(null);
     }
+  }
+
+  // Hospital tools are locked until an admin approves the hospital (the server enforces this too).
+  if (!approved) {
+    return (
+      <div>
+        <div className="page-header">
+          <h1>Verify requests</h1>
+        </div>
+        <div className="card empty-state">
+          <div className="emoji"><Hourglass size={40} className="empty-icon" /></div>
+          <p><strong>Waiting for admin approval</strong></p>
+          <p className="empty-note" style={{ marginTop: 16 }}>
+            Anyone can sign up as a hospital, so an administrator checks each one before it can verify
+            requests or donors. You'll be able to use this page as soon as yours is approved — refresh
+            to check.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

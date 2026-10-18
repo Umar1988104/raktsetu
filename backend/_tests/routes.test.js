@@ -9,7 +9,7 @@ require.cache[vt] = {
   exports: (req, res, next) => {
     const uid = req.headers["x-uid"];
     if (!uid) return res.status(401).json({ error: "no login" });
-    req.user = { uid, email: null };
+    req.user = { uid, email: null, emailVerified: req.headers["x-unverified"] ? false : true };
     next();
   },
 };

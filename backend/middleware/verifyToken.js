@@ -14,7 +14,13 @@ async function verifyToken(req, res, next) {
 
   try {
     const decoded = await admin.auth().verifyIdToken(token);
-    req.user = { uid: decoded.uid, email: decoded.email || null };
+    req.user = {
+      uid: decoded.uid,
+      email: decoded.email || null,
+      // Firebase sets this once the person clicks the link in the verification email.
+      emailVerified: decoded.email_verified === true,
+      isAnonymous: decoded.firebase?.sign_in_provider === "anonymous",
+    };
     next();
   } catch (err) {
     console.error("Token verification failed:", err.message);

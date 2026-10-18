@@ -18,20 +18,32 @@ const statsRoutes = require("./routes/stats");
 const campsRoutes = require("./routes/camps");
 const adminRoutes = require("./routes/admin");
 const cardRoutes = require("./routes/cards");
+const { applySecurity, limiters } = require("./middleware/security");
 const { backfillLifecycleFields, startMaintenanceLoop } = require("./utils/lifecycle");
 const Donor = require("./models/Donor");
 
 const app = express();
-// Needed so req.ip reflects the real client IP (not Render's proxy IP) once
-// deployed — used by the guest-request rate limiter (v1.2).
-app.set("trust proxy", true);
+// v1.8: security headers (helmet) + trust-proxy setting. IMPORTANT: when
+// deployed behind a proxy (Render etc.) set TRUST_PROXY=1 in the environment
+// so req.ip is the real visitor, not the proxy — the guest limiter, card
+// lookup limiter and the new rate limits all depend on it.
+applySecurity(app);
 
 const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
   .split(",")
   .map((o) => o.trim());
 
 app.use(cors({ origin: allowedOrigins }));
-app.use(express.json());
+// 200kb: the profile photo check allows up to ~130,000 characters, which is
+// more than express's 100kb default would accept.
+app.use(express.json({ limit: "200kb" }));
+
+// Rate limits (per IP, in memory). Sign-up and request creation get their own,
+// stricter buckets before the general one.
+const signupLimiter = limiters.signup();
+app.post(["/api/auth/register", "/api/auth/guest-register"], signupLimiter);
+app.post("/api/requests", limiters.newRequest());
+app.use("/api", limiters.general());
 
 app.get("/", (req, res) => {
   res.json({ ok: true, service: "raktsetu-backend", version: "0.3.0" });

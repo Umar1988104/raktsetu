@@ -16,6 +16,7 @@ export default function UpdatesPage() {
             <li key={e.version}>
               <span className="tl-version">{e.version}</span>
               <span className="tl-title">{e.title}</span>
+              {e.date && <span className="row-time" style={{ marginLeft: 8 }}>{new Date(e.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>}
               <ul>
                 {e.items.map((item) => (
                   <li key={item} style={{ border: "none", padding: 0, margin: 0, listStyle: "disc" }}>

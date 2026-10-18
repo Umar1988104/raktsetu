@@ -49,6 +49,7 @@ function serializeDonor(donorDoc, mode) {
     ...base,
     familyMemberId: d.familyMemberId || null,
     sex: d.sex || null,
+    hideFromMap: !!d.hideFromMap,
     location: d.location ? { coordinates: d.location.coordinates } : undefined,
     donationHistory: (d.donationHistory || []).map((h) => ({ _id: h._id, date: h.date })),
     nextEligibleDate: getNextEligibleDate(d),

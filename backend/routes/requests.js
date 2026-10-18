@@ -5,6 +5,7 @@ const User = require("../models/User");
 const Request = require("../models/Request");
 const Donor = require("../models/Donor");
 const verifyToken = require("../middleware/verifyToken");
+const { emailGate, hospitalGate, send } = require("../middleware/gates");
 const { findRankedDonors } = require("../utils/matching");
 const { contactDonors } = require("../utils/notify");
 const rules = require("../utils/lifecycleRules");
@@ -129,9 +130,8 @@ router.get("/me", verifyToken, async (req, res) => {
 router.get("/pending-verification", verifyToken, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
-    if (!user || user.role !== "hospital") {
-      return res.status(403).json({ error: "Only hospital accounts can view pending verifications" });
-    }
+    const block = hospitalGate(req, user);
+    if (block) return send(res, block);
     await sweepExpiredThrottled();
     const requests = await Request.find({
       urgency: "Critical",
@@ -297,6 +297,10 @@ router.post("/:id/respond", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "response must be 'Accepted' or 'Declined'" });
     }
     if (!donorId || !isId(donorId)) return res.status(400).json({ error: "donorId is required" });
+    if (response === "Accepted") {
+      const emailBlock = emailGate(req); // accepting shares the donor's contact details
+      if (emailBlock) return send(res, emailBlock);
+    }
 
     const donor = await Donor.findOne({ _id: donorId, user: user._id });
     if (!donor) return res.status(404).json({ error: "That donor profile isn't under your account" });
@@ -346,7 +350,10 @@ router.get("/:id/matches", verifyToken, async (req, res) => {
         coordinates: request.location.coordinates, // the seeker's own location
       },
       compatibleGroups,
-      matches: donors.map((d) => serializeMatch(d, { accepted: acceptedIds.has(String(d._id)) })),
+      // Donors who chose to stay off the map are still notified; a seeker only sees them once they accept.
+      matches: donors
+        .filter((d) => !d.hideFromMap || acceptedIds.has(String(d._id)))
+        .map((d) => serializeMatch(d, { accepted: acceptedIds.has(String(d._id)) })),
     });
   } catch (err) {
     console.error(err);
@@ -359,7 +366,8 @@ router.get("/:id/matches", verifyToken, async (req, res) => {
 router.patch("/:id/verify-hospital", verifyToken, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
-    if (!user || user.role !== "hospital") return res.status(403).json({ error: "Only hospital accounts can verify requests" });
+    const block = hospitalGate(req, user);
+    if (block) return send(res, block);
     if (!isId(req.params.id)) return res.status(404).json({ error: "Request not found" });
 
     const request = await Request.findById(req.params.id);

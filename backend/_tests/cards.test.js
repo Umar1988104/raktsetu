@@ -8,7 +8,7 @@ require.cache[vt] = {
   exports: (req, res, next) => {
     const uid = req.headers["x-uid"];
     if (!uid) return res.status(401).json({ error: "no login" });
-    req.user = { uid, email: null };
+    req.user = { uid, email: null, emailVerified: req.headers["x-unverified"] ? false : true };
     next();
   },
 };
@@ -295,7 +295,11 @@ test("hospital lookup by card id: hospitals only; full name+phone but no email/t
   cur.donor = { ...baseDonor(), user: baseUser() };
   cur.user = baseUser({ role: "donor" });
   assert.equal((await call("GET", `/api/cards/lookup/${id}`)).status, 403);
-  cur.user = baseUser({ role: "hospital" });
+  cur.user = baseUser({ role: "hospital", partnerVerified: false });
+  const unapproved = await call("GET", `/api/cards/lookup/${id}`);
+  assert.equal(unapproved.status, 403);
+  assert.equal(unapproved.json.code, "HOSPITAL_NOT_APPROVED");
+  cur.user = baseUser({ role: "hospital", partnerVerified: true });
   const r = await call("GET", `/api/cards/lookup/${id}`);
   assert.equal(r.status, 200);
   assert.equal(r.json.donors[0].display.name, "Rohan Sharma");

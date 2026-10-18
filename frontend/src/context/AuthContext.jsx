@@ -1,7 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   createUserWithEmailAndPassword,
+  EmailAuthProvider,
+  linkWithCredential,
   onAuthStateChanged,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
@@ -14,6 +17,7 @@ export function AuthProvider({ children }) {
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [profile, setProfile] = useState(null); // { user, donor } from /api/auth/me
   const [loading, setLoading] = useState(true);
+  const [emailVerified, setEmailVerified] = useState(false); // from Firebase; guests have no email
 
   const [profileError, setProfileError] = useState(false); // true = couldn't reach the server (NOT "no profile")
 
@@ -44,6 +48,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
+      setEmailVerified(!!user?.emailVerified);
       if (user) {
         setLoading(true); // hold the app on the loader until the profile is known
         await refreshProfile();
@@ -58,7 +63,46 @@ export function AuthProvider({ children }) {
 
   async function signup(email, password) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
+    // Free verification email from Firebase. If it fails to send, sign-up still
+    // works — the banner in the app lets the person ask for it again.
+    try {
+      await sendEmailVerification(cred.user);
+    } catch {
+      /* resend later from the banner */
+    }
     return cred.user;
+  }
+
+  async function sendVerification() {
+    if (!auth.currentUser) return;
+    await sendEmailVerification(auth.currentUser);
+  }
+
+  // After the person clicks the link in their email, Firebase must be asked
+  // again (and given a fresh token) before RaktSetu's server can see it.
+  async function refreshVerification() {
+    const u = auth.currentUser;
+    if (!u) return false;
+    await u.reload();
+    await u.getIdToken(true);
+    setEmailVerified(!!u.emailVerified);
+    return !!u.emailVerified;
+  }
+
+  // Guest -> full account: link an email + password to the SAME session, so
+  // every request the guest made stays theirs.
+  async function upgradeGuest(email, password) {
+    const u = auth.currentUser;
+    await linkWithCredential(u, EmailAuthProvider.credential(email, password));
+    await u.getIdToken(true); // the new token carries the email
+    await api.post("/api/auth/upgrade-guest", {});
+    try {
+      await sendEmailVerification(u);
+    } catch {
+      /* resend later from the banner */
+    }
+    await refreshProfile();
+    setEmailVerified(!!u.emailVerified);
   }
 
   async function login(email, password) {
@@ -88,6 +132,10 @@ export function AuthProvider({ children }) {
     profile,
     profileError,
     loading,
+    emailVerified,
+    sendVerification,
+    refreshVerification,
+    upgradeGuest,
     signup,
     login,
     logout,

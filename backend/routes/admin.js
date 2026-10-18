@@ -7,6 +7,9 @@ const { requireAdmin } = require("../middleware/requireAdmin");
 const rules = require("../utils/lifecycleRules");
 
 const router = express.Router();
+const { logAdminAction } = require("../utils/audit");
+const AuditLog = require("../models/AuditLog");
+const { buildStatsCsv } = require("../utils/statsCsv");
 router.use(verifyToken, requireAdmin); // everything below is admin-only
 
 const isId = (id) => mongoose.isValidObjectId(id);
@@ -73,6 +76,7 @@ router.post("/requests/:id/close", async (req, res) => {
     request.closedAt = new Date();
     request.nextEscalationAt = null;
     await request.save();
+    await logAdminAction(req, { action: "request.close", targetType: "request", targetId: request._id, summary: `Closed request (${request.bloodGroup}, ${request.hospital})` });
     res.json({ ok: true });
   } catch (err) {
     console.error(err);
@@ -102,6 +106,7 @@ router.post("/requests/:id/dismiss-reports", async (req, res) => {
     }
     await request.save();
     await User.findByIdAndUpdate(request.seeker, { throttledUntil: null });
+    await logAdminAction(req, { action: "request.dismiss-reports", targetType: "request", targetId: request._id, summary: `Dismissed reports on request (${request.bloodGroup}, ${request.hospital})${wasClosedByReports ? " and reopened it" : ""}` });
     res.json({ ok: true, reopened: wasClosedByReports });
   } catch (err) {
     console.error(err);
@@ -127,6 +132,7 @@ router.post("/users/:id/unthrottle", async (req, res) => {
     if (!isId(req.params.id)) return res.status(404).json({ error: "User not found" });
     const user = await User.findByIdAndUpdate(req.params.id, { throttledUntil: null });
     if (!user) return res.status(404).json({ error: "User not found" });
+    await logAdminAction(req, { action: "user.unthrottle", targetType: "user", targetId: user._id, summary: "Lifted a temporary block on an account" });
     res.json({ ok: true });
   } catch (err) {
     console.error(err);
@@ -164,10 +170,56 @@ router.patch("/hospitals/:id/partner-verified", async (req, res) => {
     if (!hospital) return res.status(404).json({ error: "Hospital account not found" });
     hospital.partnerVerified = req.body.verified;
     await hospital.save();
+    await logAdminAction(req, { action: req.body.verified ? "hospital.approve" : "hospital.unapprove", targetType: "hospital", targetId: hospital._id, summary: `${req.body.verified ? "Approved" : "Removed approval of"} hospital partner "${hospital.hospitalName || "unnamed"}"` });
     res.json({ hospital: { _id: hospital._id, hospitalName: hospital.hospitalName || null, partnerVerified: hospital.partnerVerified } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to update hospital" });
+  }
+});
+
+// Who did what (admin actions only, no personal data).
+router.get("/audit", async (req, res) => {
+  try {
+    const entries = await AuditLog.find({}).sort({ at: -1 }).limit(100);
+    res.json({
+      entries: entries.map((e) => ({ _id: e._id, action: e.action, targetType: e.targetType, summary: e.summary, at: e.at })),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load the audit log" });
+  }
+});
+
+// Anonymous counts for reports, as a CSV file. Groups under 5 show as "<5".
+router.get("/stats-export", async (req, res) => {
+  try {
+    const Donor = require("../models/Donor");
+    const Request = require("../models/Request");
+    const groupCounts = async (Model, field) => {
+      const rows = await Model.aggregate([{ $match: { isDemo: { $ne: true } } }, { $group: { _id: `$${field}`, n: { $sum: 1 } } }, { $sort: { _id: 1 } }]);
+      return rows.filter((r) => r._id !== null && r._id !== undefined).map((r) => ({ label: String(r._id), count: r.n }));
+    };
+    const monthly = await Request.aggregate([
+      { $match: { isDemo: { $ne: true } } },
+      { $group: { _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, n: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]);
+    const csv = buildStatsCsv([
+      { section: "users_by_role", rows: await groupCounts(User, "role") },
+      { section: "donors_by_blood_group", rows: await groupCounts(Donor, "bloodGroup") },
+      { section: "requests_by_status", rows: await groupCounts(Request, "status") },
+      { section: "requests_by_urgency", rows: await groupCounts(Request, "urgency") },
+      { section: "requests_by_blood_group", rows: await groupCounts(Request, "bloodGroup") },
+      { section: "requests_by_month", rows: monthly.map((m) => ({ label: m._id, count: m.n })) },
+    ]);
+    await logAdminAction(req, { action: "stats.export", targetType: "stats", summary: "Downloaded the anonymous statistics CSV" });
+    res.set("Content-Type", "text/csv; charset=utf-8");
+    res.set("Content-Disposition", 'attachment; filename="raktsetu-stats.csv"');
+    res.send(csv);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to build the statistics export" });
   }
 });
 
