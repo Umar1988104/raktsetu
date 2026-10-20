@@ -12,6 +12,8 @@ const requestSchema = new mongoose.Schema(
     familyMemberId: { type: mongoose.Schema.Types.ObjectId, default: null },
     patientName: { type: String, trim: true },
     bloodGroup: { type: String, enum: BLOOD_GROUPS, required: true },
+    // v1.9: what is needed. Matching rules differ per component (utils/bloodCompatibility.js).
+    component: { type: String, enum: ["Whole blood", "Platelets", "Plasma"], default: "Whole blood" },
     units: { type: Number, required: true, min: 1 },
     urgency: { type: String, enum: ["Normal", "Urgent", "Critical"], default: "Normal" },
     hospital: { type: String, required: true, trim: true },
@@ -43,6 +45,11 @@ const requestSchema = new mongoose.Schema(
     // notified. nextEscalationAt is null once the rounds are used up.
     escalationRound: { type: Number, default: 0 },
     nextEscalationAt: { type: Date, default: null, index: true },
+    // --- Plan-ahead (v1.9) ---
+    neededBy: { type: Date, default: null }, // when the blood is needed (null = now)
+    releaseAt: { type: Date, default: null, index: true }, // when donors get contacted (planned requests)
+    released: { type: Boolean, default: true }, // false = planned request still waiting for releaseAt
+    recurringPlan: { type: mongoose.Schema.Types.ObjectId, ref: "RecurringPlan", default: null }, // set when auto-created from a plan
     isDemo: { type: Boolean, default: false, index: true }, // sample data from seed-demo.js
     // Random token for the public, read-only tracking link a seeker can share
     // (e.g. to a family WhatsApp group). Generated lazily when they first share.

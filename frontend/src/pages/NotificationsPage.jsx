@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import Skeleton from "../components/Skeleton";
+import ContactButtons from "../components/ContactButtons";
+import { requestHeadline, formatNeededBy } from "../requestFormat";
 import * as m from "motion/react-m";
 import { StaggerList, staggerItem } from "../motion/kit";
 import { Link } from "react-router-dom";
@@ -92,8 +94,9 @@ function DonorInbox() {
                   </div>
                   <div>
                     <div className="row-title">
-                      {r.bloodGroup} · {r.units} unit(s) · {r.urgency}
+                      {requestHeadline(r)} · {r.urgency}
                     </div>
+                    {r.neededBy && <div className="row-sub">Needed by {formatNeededBy(r.neededBy)}</div>}
                     <div className="row-sub">
                       {r.hospital} · {r.area}
                       {r.patientName && <> · for {r.patientName}</>}
@@ -102,6 +105,11 @@ function DonorInbox() {
                       Requested by {r.seeker?.name}
                       {r.seeker?.phone ? ` · ${r.seeker.phone}` : " · phone shared once you accept"}
                     </div>
+                    {r.seeker?.phone && (
+                      <div style={{ marginTop: 8 }}>
+                        <ContactButtons phone={r.seeker.phone} hospital={r.hospital} />
+                      </div>
+                    )}
                     {r.respondingAs !== "you" && (
                       <div className="row-sub" style={{ fontStyle: "italic" }}>
                         Responding as {r.respondingAs}

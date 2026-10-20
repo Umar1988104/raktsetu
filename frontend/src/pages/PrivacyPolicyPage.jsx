@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
       <div className="page" style={{ maxWidth: 720 }}>
         <div className="page-header">
           <h1>Privacy Policy</h1>
-          <p>Last updated: 17 October 2026 (v1.8). A plain-language explanation of what we actually store and why.</p>
+          <p>Last updated: 20 October 2026 (v1.9). A plain-language explanation of what we actually store and why.</p>
         </div>
 
         <div className="card">
@@ -65,6 +65,29 @@ export default function PrivacyPolicyPage() {
             Donors can switch on “Show me on the map” or off in their profile. Staying off the map
             does not stop you being matched and notified; you simply appear to the requester only
             after you accept.
+          </p>
+        </div>
+
+        <div className="card">
+          <h3>Planned and repeating requests</h3>
+          <p>
+            A request can be planned up to 30 days ahead; donors are only contacted about three days
+            before it is needed. A repeating request (for example for regular transfusions) stores the
+            hospital, area, location, blood group, units and schedule you entered, and the server turns
+            each occurrence into a normal request about a week before it is due, sending you a reminder
+            email. You can pause, skip or stop it any time, and deleting it removes the stored plan.
+            Repeating requests need a verified email so they cannot be used for spam.
+          </p>
+        </div>
+
+        <div className="card">
+          <h3>Donor contact preferences and reminders</h3>
+          <p>
+            Donors can choose quiet hours or “emergencies only”. They stay in the donor pool; we simply
+            don't contact them at those times, and Critical requests still reach everyone. If you have
+            donated before and enough time has passed, we send one email telling you that you can donate
+            again, once per donation. Platelet and plasma requests use the same donation gap as blood to
+            be safe; the blood bank always makes the final eligibility decision.
           </p>
         </div>
 

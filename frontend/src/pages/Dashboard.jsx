@@ -1,3 +1,4 @@
+import { requestHeadline, formatNeededBy, displayStatus } from "../requestFormat";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -74,6 +75,24 @@ export default function Dashboard() {
         <HeaderAction role={role} t={t} />
       </div>
 
+      {/* What this person most likely came here to do, first (v1.9) */}
+      {role === "seeker" && <SeekerFocus requests={requests} />}
+      {role === "donor" && (
+        <>
+          {donors?.some((d) => d.eligibleAgain) && (
+            <div className="banner banner-info" role="status">
+              <HeartHandshake size={20} />
+              <div className="banner-text">
+                <strong>You can donate again.</strong> Enough time has passed since your last donation. Turn “Available to donate” on in your profile whenever you're ready.
+              </div>
+              <Link to="/profile" className="btn-primary">Open profile</Link>
+            </div>
+          )}
+          <PendingForMeCard count={pendingForMe} t={t} />
+        </>
+      )}
+      {role === "hospital" && <PendingVerifyCard count={pendingVerify} t={t} />}
+
       <LiveStrip stats={stats} t={t} />
 
       <RecurringCareReminders familyMembers={profile?.user?.familyMembers} />
@@ -127,27 +146,18 @@ export default function Dashboard() {
                         <Droplet size={16} />
                       </div>
                       <div>
-                        <div className="row-title">
-                          {r.bloodGroup} · {r.units} unit(s)
-                        </div>
+                        <div className="row-title">{requestHeadline(r)}</div>
                         <div className="row-sub">{r.hospital}</div>
                       </div>
                     </div>
-                    <StatusPill status={r.status} />
+                    <StatusPill status={displayStatus(r)} />
                   </Link>
                 ))
               )}
             </div>
           )}
 
-          {role === "donor" && (
-            <>
-              <PendingForMeCard count={pendingForMe} t={t} />
-              <DonorStatusCard donors={donors} t={t} />
-            </>
-          )}
-
-          {role === "hospital" && <PendingVerifyCard count={pendingVerify} t={t} />}
+          {role === "donor" && <DonorStatusCard donors={donors} t={t} />}
         </div>
 
         <div className="card">
@@ -486,6 +496,59 @@ function StatCard({ icon, color, value, label }) {
         <AnimatedNumber value={value} />
       </div>
       <div className="stat-label">{t(label)}</div>
+    </div>
+  );
+}
+
+// The seeker's most important thing: their live request (or what's coming up).
+function SeekerFocus({ requests }) {
+  const open = requests.filter((r) => !["Fulfilled", "Expired"].includes(r.status));
+  const live = open.filter((r) => !r.lifecycle?.scheduled);
+  const planned = open.filter((r) => r.lifecycle?.scheduled).sort((a, b) => new Date(a.neededBy) - new Date(b.neededBy));
+  const rank = { Critical: 0, Urgent: 1, Normal: 2 };
+  live.sort((a, b) => (rank[a.urgency] ?? 3) - (rank[b.urgency] ?? 3) || new Date(b.createdAt) - new Date(a.createdAt));
+  const main = live[0];
+  if (!main && planned.length === 0) return null;
+
+  return (
+    <div className="card focus-card">
+      {main ? (
+        <>
+          <h3>Your active request</h3>
+          <Link to={`/requests/${main._id}`} className="list-row" style={{ color: "inherit", borderBottom: "none", padding: 0 }}>
+            <div>
+              <div className="row-title">{requestHeadline(main)}</div>
+              <div className="row-sub">{main.hospital} · {main.area}</div>
+              <div className="row-sub">
+                {main.contactedDonors?.length || 0} donor(s) notified · {main.contactedDonors?.filter((c) => c.status === "Accepted").length || 0} accepted
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <StatusPill status={displayStatus(main)} />
+              <ArrowRight size={16} />
+            </div>
+          </Link>
+          {live.length > 1 && (
+            <p className="row-sub" style={{ marginTop: 12 }}>
+              + {live.length - 1} more active · <Link to="/requests">see all</Link>
+            </p>
+          )}
+        </>
+      ) : null}
+      {planned.length > 0 && (
+        <div style={{ marginTop: main ? 16 : 0 }}>
+          <h3>Coming up</h3>
+          {planned.slice(0, 3).map((r) => (
+            <Link key={r._id} to={`/requests/${r._id}`} className="list-row" style={{ color: "inherit", padding: "8px 0" }}>
+              <div>
+                <div className="row-title">{requestHeadline(r)}</div>
+                <div className="row-sub">{r.hospital} · needed {formatNeededBy(r.neededBy)}</div>
+              </div>
+              <StatusPill status="Scheduled" />
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

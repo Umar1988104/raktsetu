@@ -7,6 +7,7 @@ const verifyToken = require("../middleware/verifyToken");
 const { emailGate, hospitalGate, send } = require("../middleware/gates");
 const { resolveDonorContact } = require("../utils/familyHelpers");
 const { getNextEligibleDate } = require("../utils/eligibility");
+const { parseSchedule } = require("../utils/schedule");
 const { escapeRegex } = require("../utils/text");
 const { serializeDonor, serializeSeekerForDonor } = require("../utils/serializers");
 const rules = require("../utils/lifecycleRules");
@@ -114,6 +115,50 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
+// When may this donor be contacted? (v1.9) Emergencies-only and quiet hours.
+router.patch("/:id/schedule", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!user) return res.status(404).json({ error: "Donor profile not found" });
+    if (!isId(req.params.id)) return res.status(404).json({ error: "Donor profile not found" });
+    const parsed = parseSchedule(req.body);
+    if (parsed.error) return res.status(400).json({ error: parsed.error });
+    const donor = await Donor.findOne({ _id: req.params.id, user: user._id });
+    if (!donor) return res.status(404).json({ error: "Donor profile not found" });
+
+    donor.schedule = donor.schedule || {};
+    if (parsed.value.emergenciesOnly !== undefined) donor.schedule.emergenciesOnly = parsed.value.emergenciesOnly;
+    if (parsed.value.quietHours) donor.schedule.quietHours = parsed.value.quietHours;
+    await donor.save();
+    await donor.populate("user", USER_FIELDS);
+    res.json({ donor: serializeDonor(donor, "self") });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update your schedule" });
+  }
+});
+
+// Hospital partner: verify several donors at once (v1.9). Up to 25 per call.
+router.patch("/verify-many", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    const block = hospitalGate(req, user);
+    if (block) return send(res, block);
+
+    const ids = Array.isArray(req.body.donorIds) ? req.body.donorIds : [];
+    if (ids.length === 0) return res.status(400).json({ error: "Choose at least one donor" });
+    if (ids.length > 25) return res.status(400).json({ error: "You can verify up to 25 donors at a time" });
+    if (!ids.every((id) => isId(id))) return res.status(400).json({ error: "One of the donor ids isn't valid" });
+
+    const unique = [...new Set(ids.map(String))];
+    const result = await Donor.updateMany({ _id: { $in: unique } }, { verified: true });
+    res.json({ requested: unique.length, verified: result.modifiedCount ?? result.nModified ?? 0 });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to verify donors" });
+  }
+});
+
 // A donor can stay OFF the open browse list and the seeker's match map while
 // still being matched and notified for real requests. They show up to a
 // seeker only after accepting.
@@ -191,6 +236,8 @@ router.get("/me/incoming-requests", verifyToken, async (req, res) => {
           donorId: matchedDonor._id,
           respondingAs: display.isFamilyMember ? display.name : "you",
           bloodGroup: r.bloodGroup,
+          component: r.component || "Whole blood",
+          neededBy: r.neededBy || null,
           units: r.units,
           urgency: r.urgency,
           hospital: r.hospital,

@@ -57,7 +57,7 @@ export const CARDS = [
 // A fixture value may be a plain object or a function (req) => body for stateful fakes.
 export function fixtures(role = "donor", opts = {}) {
   const user = { name: "Umar Sikandri", role, isGuest: !!opts.guest, email: opts.guest ? undefined : "umar@example.com", familyMembers: [], hospitalName: "City Hospital", partnerVerified: !!opts.approved };
-  const donor = { _id: "d1", bloodGroup: "O+", area: "Srinivaspuri", available: opts.available ?? true, hideFromMap: !!opts.hidden, verified: true, trustTier: "Trusted", donationHistory: [], display: { name: "Umar Sikandri" }, familyMemberId: null, nextEligibleDate: null };
+  const donor = { _id: "d1", bloodGroup: "O+", area: "Srinivaspuri", available: opts.available ?? true, hideFromMap: !!opts.hidden, verified: true, trustTier: "Trusted", donationHistory: [], display: { name: "Umar Sikandri" }, familyMemberId: null, nextEligibleDate: null, eligibleAgain: !!opts.eligibleAgain, schedule: { emergenciesOnly: false, quietHours: { enabled: false, start: "22:00", end: "07:00" } } };
   const reqs = [
     { _id: "r1", bloodGroup: "B+", units: 2, area: "Noida", hospital: "Max Hospital", status: "Searching", urgency: "Critical", contactedDonors: [] },
     { _id: "r2", bloodGroup: "O-", units: 1, area: "Delhi", hospital: "AIIMS", status: "Contacted", urgency: "Urgent", contactedDonors: [] },
@@ -67,6 +67,13 @@ export function fixtures(role = "donor", opts = {}) {
     "GET /api/auth/me": { user, donors: [donor], isAdmin: !!opts.admin },
     "GET /api/stats": { totalDonors: 128, availableDonors: 42, fulfilledRequests: 17, activeRequests: 5, criticalOpen: 2, byBloodGroup: { "A+": 20, "B+": 25, "O+": 40 }, hospitalPartners: { count: 2, names: ["City Hospital"] }, demoDataIncluded: false },
     "GET /api/camps": { camps: [] },
+    "GET /api/camps/mine": { camps: [] },
+    "GET /api/recurring": { plans: [] },
+    "PATCH /api/donors/d1/schedule": { ok: true },
+    "POST /api/requests": { request: { _id: "new1", bloodGroup: "B+", units: 2, urgency: "Normal", hospital: "City Hospital", area: "Delhi", status: "Searching", contactedDonors: [] } },
+    "POST /api/recurring": { plan: { _id: "pl1" } },
+    "GET /api/requests/new1": { request: { _id: "new1", bloodGroup: "B+", component: "Platelets", units: 2, urgency: "Normal", hospital: "City Hospital", area: "Delhi", status: "Searching", contactedDonors: [], lifecycle: { scheduled: true, releaseAt: new Date(Date.now() + 86400e3).toISOString() }, neededBy: new Date(Date.now() + 5 * 86400e3).toISOString(), location: { coordinates: [77.2, 28.6] } } },
+    "GET /api/requests/new1/matches": { matches: [] },
     "GET /api/requests/me": { requests: reqs },
     "GET /api/requests/pending-verification": { requests: [] },
     "GET /api/donors/me": { donors: [donor] },

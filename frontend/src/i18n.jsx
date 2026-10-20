@@ -165,6 +165,11 @@ const HI = {
   "Resend email": "ईमेल दोबारा भेजें",
   "I've verified": "मैंने सत्यापित कर लिया",
   "Show me on the map": "मुझे मानचित्र पर दिखाएँ",
+  // v1.9 (needs native-speaker review)
+  "Plan ahead": "पहले से योजना बनाएँ",
+  "Repeat this request": "इस अनुरोध को दोहराएँ",
+  "Contact preferences": "संपर्क की पसंद",
+  "Call": "कॉल करें",
 };
 
 const LanguageContext = createContext({ lang: "en", setLang: () => {}, t: (s) => s });

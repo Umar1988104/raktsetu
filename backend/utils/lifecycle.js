@@ -6,9 +6,10 @@ const Request = require("../models/Request");
 const rules = require("./lifecycleRules");
 const { findRankedDonors } = require("./matching");
 const { contactDonors } = require("./notify");
+const { contactFirstBatch } = require("./requestFactory");
 
 const LIFECYCLE_FIELDS =
-  "status urgency createdAt expiresAt hospitalVerified escalationRound nextEscalationAt contactedDonors extensions";
+  "status urgency createdAt expiresAt hospitalVerified escalationRound nextEscalationAt contactedDonors extensions released releaseAt bloodGroup component location";
 
 // Closes every open request whose time is up.
 async function sweepExpired(now = new Date()) {
@@ -58,7 +59,7 @@ async function escalateRequest(doc, now = new Date()) {
   );
   if (!claimed) return { escalated: false }; // someone else got there first
 
-  const { donors } = await findRankedDonors(claimed, Math.min(claimed.contactedDonors.length + rules.BATCH_SIZE, 100));
+  const { donors } = await findRankedDonors(claimed, Math.min(claimed.contactedDonors.length + rules.BATCH_SIZE, 100), { respectSchedule: true, now });
   const batch = rules.pickEscalationBatch(donors, claimed, rules.BATCH_SIZE);
   if (batch.length === 0) return { escalated: true, contacted: 0 };
 
@@ -66,6 +67,22 @@ async function escalateRequest(doc, now = new Date()) {
   await Request.updateOne({ _id: claimed._id }, { $push: { contactedDonors: { $each: entries } } });
   await Request.updateOne({ _id: claimed._id, status: "Searching" }, { $set: { status: "Contacted" } });
   return { escalated: true, contacted: entries.length };
+}
+
+// Planned requests (v1.9): once their release time arrives, contact the first
+// batch of donors and start the normal escalation clock. Compare-and-swap on
+// `released` so the background timer and a page view can't both release it.
+async function releaseRequest(doc, now = new Date()) {
+  if (rules.isReleased(doc) || !doc.releaseAt || new Date(doc.releaseAt) > now) return { released: false };
+  if (!rules.isOpenForSearch(doc)) return { released: false };
+  const claimed = await Request.findOneAndUpdate(
+    { _id: doc._id, released: false },
+    { $set: { released: true, nextEscalationAt: new Date(now.getTime() + rules.escalationMsFor(doc.urgency)) } },
+    { new: true }
+  );
+  if (!claimed) return { released: false };
+  const contacted = await contactFirstBatch(claimed);
+  return { released: true, contacted };
 }
 
 // Called when someone looks at one request: time it out or widen the search
@@ -80,12 +97,32 @@ async function maintainRequest(id, now = new Date()) {
     );
     return;
   }
+  if (!rules.isReleased(doc)) {
+    await releaseRequest(doc, now);
+    return;
+  }
   await escalateRequest(doc, now);
 }
 
 async function runMaintenanceTick() {
   const now = new Date();
   await sweepExpired(now);
+  const toRelease = await Request.find({ released: false, releaseAt: { $lte: now }, status: { $in: rules.OPEN_FOR_SEARCH } })
+    .select(LIFECYCLE_FIELDS)
+    .limit(25);
+  for (const d of toRelease) {
+    try {
+      await releaseRequest(d, now);
+    } catch (err) {
+      console.error("Release failed:", err.message);
+    }
+  }
+  try {
+    await require("./recurring").generateDueRecurring(now);
+    await require("./reminders").sendEligibleAgainReminders(now);
+  } catch (err) {
+    console.error("Recurring/reminder step failed:", err.message);
+  }
   const due = await Request.find({
     status: { $in: rules.OPEN_FOR_SEARCH },
     nextEscalationAt: { $lte: now },
@@ -115,5 +152,5 @@ function startMaintenanceLoop(intervalMs = 60000) {
 
 module.exports = {
   sweepExpired, sweepExpiredThrottled, backfillLifecycleFields,
-  escalateRequest, maintainRequest, runMaintenanceTick, startMaintenanceLoop,
+  escalateRequest, releaseRequest, maintainRequest, runMaintenanceTick, startMaintenanceLoop,
 };

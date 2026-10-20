@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "../components/UiFeedback";
 import Switch from "../components/Switch";
 import Sheet from "../components/Sheet";
+import SchedulePreferencesSheet from "../components/SchedulePreferencesSheet";
 import { Link } from "react-router-dom";
 import { MapPin, Plus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -147,6 +148,7 @@ function DonorProfileCard({ donor, onSaved }) {
   const toast = useToast();
   const [editing, setEditing] = useState(false);
   const [checkingEligibility, setCheckingEligibility] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [error, setError] = useState("");
   // Optimistic availability: the switch and pill change the instant you tap;
   // if the server says no, they snap back and you're told why.
@@ -244,6 +246,20 @@ function DonorProfileCard({ donor, onSaved }) {
               Next eligible to donate: {new Date(donor.nextEligibleDate).toLocaleDateString()}
             </div>
           )}
+          {donor.eligibleAgain && (
+            <div className="banner banner-info" role="status" style={{ marginTop: 8, marginBottom: 0 }}>
+              <div className="banner-text">
+                <strong>You can donate again.</strong> Enough time has passed since your last donation. Switch “Available to donate” on whenever you're ready.
+              </div>
+            </div>
+          )}
+          {(donor.schedule?.emergenciesOnly || donor.schedule?.quietHours?.enabled) && (
+            <div className="row-sub" style={{ marginTop: 4 }}>
+              {donor.schedule.emergenciesOnly ? "Emergencies only" : ""}
+              {donor.schedule.emergenciesOnly && donor.schedule.quietHours?.enabled ? " · " : ""}
+              {donor.schedule.quietHours?.enabled ? `Quiet hours ${donor.schedule.quietHours.start}–${donor.schedule.quietHours.end}` : ""}
+            </div>
+          )}
           {donor.donationHistory?.length > 0 && (
             <div style={{ marginTop: 8 }}>
               {donor.donationHistory.map((h) => (
@@ -270,10 +286,16 @@ function DonorProfileCard({ donor, onSaved }) {
           </span>
           <Switch checked={onMap} onChange={setOnMap} label="Show me on the map" />
         </div>
-        <button className="ghost" onClick={() => setEditing(true)}>
-          Edit
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="ghost" onClick={() => setScheduleOpen(true)}>
+            Contact preferences
+          </button>
+          <button className="ghost" onClick={() => setEditing(true)}>
+            Edit
+          </button>
+        </div>
       </div>
+      <SchedulePreferencesSheet donor={donor} open={scheduleOpen} onClose={() => setScheduleOpen(false)} onSaved={onSaved} />
       <Sheet open={checkingEligibility} onClose={() => setCheckingEligibility(false)} labelledBy="elig-title">
         <EligibilityCheck onConfirm={confirmEligibleAndTurnOn} onCancel={() => setCheckingEligibility(false)} />
       </Sheet>

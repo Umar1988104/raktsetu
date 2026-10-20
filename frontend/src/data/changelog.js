@@ -2,6 +2,21 @@
 // invented dates. Edit freely as you ship more.
 export const CHANGELOG = [
   {
+    version: "v1.9",
+    date: "2026-10-20",
+    title: "Smarter requests & donor tools",
+    items: [
+      "A simpler, step-by-step request form with big blood-group buttons",
+      "Plan ahead: ask for blood for a date up to 30 days away — donors are contacted about 3 days before",
+      "Repeating requests for regular transfusions, created for you automatically",
+      "Request platelets or plasma, not just blood",
+      "Call and WhatsApp buttons once someone accepts",
+      "Donors can set quiet hours or “emergencies only”, and get a nudge when they can donate again",
+      "Hospital partners can verify several donors at once and edit or cancel their camps",
+      "Your dashboard now puts what matters for your role first",
+    ],
+  },
+  {
     version: "v1.8",
     date: "2026-10-17",
     title: "Trust & safety",

@@ -3,6 +3,8 @@ import Skeleton from "../components/Skeleton";
 import { ShieldCheck, Search, Droplet, CreditCard } from "lucide-react";
 import { api } from "../api";
 import { useAuth } from "../context/AuthContext";
+import { requestHeadline } from "../requestFormat";
+import { useToast } from "../components/UiFeedback";
 import { Hourglass } from "lucide-react";
 
 export default function HospitalVerifyPage() {
@@ -16,6 +18,8 @@ export default function HospitalVerifyPage() {
   const [searching, setSearching] = useState(false);
   const [cardId, setCardId] = useState("");
   const [cardError, setCardError] = useState("");
+  const [selected, setSelected] = useState([]); // donor ids ticked for "Verify selected"
+  const toast = useToast();
 
   function loadPending() {
     api
@@ -41,12 +45,32 @@ export default function HospitalVerifyPage() {
     }
   }
 
+  const unverified = donors.filter((d) => !d.verified);
+  const toggle = (id) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+
+  // Verify several donors in one go (max 25 — the server enforces it too).
+  async function verifySelected() {
+    const ids = selected.slice(0, 25);
+    setBusyId("bulk");
+    try {
+      const res = await api.patch("/api/donors/verify-many", { donorIds: ids });
+      setDonors((list) => list.map((d) => (ids.includes(d._id) ? { ...d, verified: true } : d)));
+      setSelected([]);
+      toast(`${res.verified} donor${res.verified === 1 ? "" : "s"} verified.`, "success");
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function searchDonors(e) {
     e.preventDefault();
     setSearching(true);
     try {
       const data = await api.get(`/api/donors/search?q=${encodeURIComponent(query)}`);
       setDonors(data.donors);
+      setSelected([]);
     } finally {
       setSearching(false);
     }
@@ -124,7 +148,7 @@ export default function HospitalVerifyPage() {
                 </div>
                 <div>
                   <div className="row-title">
-                    {r.bloodGroup} · {r.units} unit(s) · Critical
+                    {requestHeadline(r)} · Critical
                   </div>
                   <div className="row-sub">
                     {r.area} · Requested by {r.seeker?.name} ({r.seeker?.phone})
@@ -166,9 +190,29 @@ export default function HospitalVerifyPage() {
         </form>
         {cardError && <p className="error">{cardError}</p>}
 
+        {unverified.length > 1 && (
+          <div className="filter-row" style={{ marginBottom: 12 }}>
+            <button type="button" className="ghost" onClick={() => setSelected(selected.length === unverified.length ? [] : unverified.slice(0, 25).map((d) => d._id))}>
+              {selected.length === unverified.length ? "Clear selection" : "Select all not yet verified"}
+            </button>
+            <button type="button" disabled={selected.length === 0 || busyId === "bulk"} onClick={verifySelected}>
+              <ShieldCheck size={14} /> Verify selected ({selected.length})
+            </button>
+          </div>
+        )}
+
         {donors.map((d) => (
           <div key={d._id} className="donor-card">
             <div className="donor-card-main">
+              {!d.verified && unverified.length > 1 && (
+                <input
+                  type="checkbox"
+                  aria-label={`Select ${d.display?.name}`}
+                  checked={selected.includes(d._id)}
+                  onChange={() => toggle(d._id)}
+                  style={{ width: 20, height: 20 }}
+                />
+              )}
               <div>
                 <div className="row-title">{d.display?.name}{d.display?.relation && ` (${d.display.relation})`}</div>
                 <div className="row-sub">

@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const Camp = require("../models/Camp");
 const verifyToken = require("../middleware/verifyToken");
@@ -80,9 +81,50 @@ router.get("/mine", verifyToken, async (req, res) => {
   }
 });
 
+// Edit one of the hospital's own camps (v1.9).
+router.patch("/:id", verifyToken, async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    const block = hospitalGate(req, user);
+    if (block) return send(res, block);
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ error: "Camp not found" });
+    const camp = await Camp.findOne({ _id: req.params.id, hospital: user._id });
+    if (!camp) return res.status(404).json({ error: "Camp not found" });
+
+    const { name, date, address, area, lat, lng, accessibility } = req.body;
+    if (name !== undefined) camp.name = String(name).trim();
+    if (address !== undefined) camp.address = String(address).trim();
+    if (area !== undefined) camp.area = String(area).trim();
+    if (date !== undefined) {
+      const d = new Date(date);
+      if (Number.isNaN(d.getTime())) return res.status(400).json({ error: "That date isn't valid" });
+      camp.date = d;
+    }
+    if (lat !== undefined && lng !== undefined) {
+      if (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng))) return res.status(400).json({ error: "lat and lng must be numbers" });
+      camp.location = { type: "Point", coordinates: [Number(lng), Number(lat)] };
+    }
+    if (accessibility && typeof accessibility === "object") {
+      for (const k of ["wheelchairRamp", "groundFloor", "accessibleParking"]) {
+        if (typeof accessibility[k] === "boolean") camp.accessibility[k] = accessibility[k];
+      }
+    }
+    if (!camp.name || !camp.address || !camp.area) return res.status(400).json({ error: "name, address and area can't be empty" });
+    await camp.save();
+    res.json({ camp });
+  } catch (err) {
+    if (err.name === "ValidationError") return res.status(400).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "Failed to update camp" });
+  }
+});
+
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const user = await getCurrentUser(req);
+    const block = hospitalGate(req, user);
+    if (block) return send(res, block);
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ error: "Camp not found" });
     const camp = await Camp.findOne({ _id: req.params.id, hospital: user._id });
     if (!camp) return res.status(404).json({ error: "Camp not found" });
     await camp.deleteOne();

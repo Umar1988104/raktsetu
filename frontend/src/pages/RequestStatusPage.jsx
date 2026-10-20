@@ -4,13 +4,15 @@ import { useParams } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Check, Clock, Phone } from "lucide-react";
+import { Check, Clock, CalendarClock } from "lucide-react";
 import { useConfirm, useToast } from "../components/UiFeedback";
 import { api } from "../api";
 import { UrgencyPill } from "../components/StatusPill";
 import ReadAloudButton from "../components/ReadAloudButton";
 import ShareRequestButton from "../components/ShareRequestButton";
 import SelfDeclaredNote from "../components/SelfDeclaredNote";
+import ContactButtons from "../components/ContactButtons";
+import { requestHeadline, formatNeededBy } from "../requestFormat";
 
 const STAGES = ["Searching", "Contacted", "Confirmed", "Fulfilled"];
 const TIER_CLASS = { New: "pill-expired", Trusted: "pill-confirmed", Pillar: "pill-verified" };
@@ -112,18 +114,27 @@ export default function RequestStatusPage() {
     <div>
       <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
         <div>
-          <h1>
-            {request.bloodGroup} · {request.units} unit(s)
-          </h1>
+          <h1>{requestHeadline(request)}</h1>
           <p>
             Track the status of your blood request in real time.
             {request.patientName && <> For {request.patientName}.</>}
           </p>
         </div>
         <ReadAloudButton
-          text={`${request.bloodGroup}, ${request.units} units, ${request.urgency} urgency, at ${request.hospital}. Current status: ${request.status}.${request.patientName ? ` For ${request.patientName}.` : ""}`}
+          text={`${request.bloodGroup}${request.component && request.component !== "Whole blood" ? " " + request.component : ""}, ${request.units} units, ${request.urgency} urgency, at ${request.hospital}. Current status: ${request.status}.${request.patientName ? ` For ${request.patientName}.` : ""}`}
         />
       </div>
+
+      {request.lifecycle?.scheduled && (
+        <div className="banner banner-info" role="status">
+          <CalendarClock size={20} />
+          <div className="banner-text">
+            <strong>Planned for {formatNeededBy(request.neededBy)}.</strong> Donors will be contacted from{" "}
+            {formatNeededBy(request.lifecycle.releaseAt)}, so they aren't asked too early. Nothing else to do for now.
+            {request.fromRecurringPlan && " This came from one of your repeating requests."}
+          </div>
+        </div>
+      )}
 
       {!isExpired && (
         <div style={{ marginBottom: 24 }}>
@@ -224,13 +235,7 @@ export default function RequestStatusPage() {
                   </div>
                   <div className="row-sub">Accepted {c.respondedAt ? new Date(c.respondedAt).toLocaleString() : ""}</div>
                 </div>
-                {c.donorDisplay.phone && (
-                  <a href={`tel:${c.donorDisplay.phone}`}>
-                    <button className="secondary">
-                      <Phone size={14} /> Call
-                    </button>
-                  </a>
-                )}
+                <ContactButtons phone={c.donorDisplay.phone} hospital={request.hospital} />
               </div>
             ))}
         </div>
@@ -247,10 +252,22 @@ export default function RequestStatusPage() {
             <span className="row-sub">Blood group</span>
             <strong>{request.bloodGroup}</strong>
           </div>
+          {request.component && request.component !== "Whole blood" && (
+            <div className="list-row">
+              <span className="row-sub">Needed</span>
+              <strong>{request.component}</strong>
+            </div>
+          )}
           <div className="list-row">
             <span className="row-sub">Units</span>
             <strong>{request.units}</strong>
           </div>
+          {request.neededBy && (
+            <div className="list-row">
+              <span className="row-sub">Needed by</span>
+              <strong>{formatNeededBy(request.neededBy)}</strong>
+            </div>
+          )}
           <div className="list-row">
             <span className="row-sub">Hospital</span>
             <strong>{request.hospital}</strong>

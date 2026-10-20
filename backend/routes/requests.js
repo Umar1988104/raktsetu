@@ -6,6 +6,8 @@ const Request = require("../models/Request");
 const Donor = require("../models/Donor");
 const verifyToken = require("../middleware/verifyToken");
 const { emailGate, hospitalGate, send } = require("../middleware/gates");
+const { generateDueRecurring } = require("../utils/recurring");
+const { parseRequestExtras, createRequestForSeeker, contactFirstBatch } = require("../utils/requestFactory");
 const { findRankedDonors } = require("../utils/matching");
 const { contactDonors } = require("../utils/notify");
 const rules = require("../utils/lifecycleRules");
@@ -62,48 +64,22 @@ router.post("/", verifyToken, async (req, res) => {
       }
     }
 
-    let patientName = user.name;
-    if (familyMemberId) {
-      const fm = user.familyMembers.id(familyMemberId);
-      if (!fm) return res.status(400).json({ error: "That family member doesn't exist on this account" });
-      patientName = fm.name;
-    }
+    const extras = parseRequestExtras(req.body);
+    if (extras.error) return res.status(400).json({ error: extras.error });
 
-    const level = urgency || "Normal";
-    const schedule = rules.initialSchedule(level);
-    const isCritical = level === "Critical";
-
-    const request = await Request.create({
-      seeker: user._id,
-      familyMemberId: familyMemberId || null,
-      patientName,
-      bloodGroup,
-      units,
-      urgency: level,
-      hospital,
-      area,
-      location: { type: "Point", coordinates: [Number(lng), Number(lat)] },
-      notes,
-      creatorIp: req.ip,
-      expiresAt: schedule.expiresAt,
-      // Critical requests wait for hospital verification before any searching.
-      nextEscalationAt: isCritical ? null : schedule.nextEscalationAt,
+    const { request, awaitingHospitalVerification } = await createRequestForSeeker({
+      user,
+      fields: { bloodGroup, units, urgency, hospital, area, lat, lng, notes, familyMemberId, component: extras.component, neededBy: extras.neededBy },
+      ip: req.ip,
     });
 
-    if (isCritical) {
+    if (awaitingHospitalVerification) {
       return res.status(201).json({ request: serializeRequestForOwner(request), awaitingHospitalVerification: true });
-    }
-
-    const { donors } = await findRankedDonors(request, rules.BATCH_SIZE);
-    if (donors.length > 0) {
-      request.contactedDonors = await contactDonors(request, donors);
-      request.status = "Contacted";
-      await request.save();
     }
 
     res.status(201).json({ request: serializeRequestForOwner(request) });
   } catch (err) {
-    if (err.name === "ValidationError") return res.status(400).json({ error: err.message });
+    if (err.name === "ValidationError" || err.status === 400) return res.status(400).json({ error: err.message });
     console.error(err);
     res.status(500).json({ error: "Failed to create request" });
   }
@@ -116,6 +92,8 @@ router.get("/me", verifyToken, async (req, res) => {
     if (!user || user.role !== "seeker") return res.status(403).json({ error: "Only seekers have requests" });
 
     await sweepExpiredThrottled();
+    // Free hosting sleeps, so a seeker opening their list also creates any repeating requests that are due.
+    await generateDueRecurring(new Date(), { seekerId: user._id }).catch((e) => console.error("Recurring:", e.message));
     const requests = await Request.find({ seeker: user._id }).populate(CONTACTED_POPULATE).sort({ createdAt: -1 });
     const now = new Date();
     res.json({ requests: requests.map((r) => serializeRequestForOwner(r, now)) });
@@ -161,6 +139,8 @@ router.get("/public/:token", async (req, res) => {
 
     res.json({
       bloodGroup: request.bloodGroup,
+      component: request.component || "Whole blood",
+      neededBy: request.neededBy || null,
       units: request.units,
       urgency: request.urgency,
       hospital: request.hospital,
@@ -384,12 +364,7 @@ router.patch("/:id/verify-hospital", verifyToken, async (req, res) => {
     request.escalationRound = 0;
     await request.save();
 
-    const { donors } = await findRankedDonors(request, rules.BATCH_SIZE);
-    if (donors.length > 0) {
-      request.contactedDonors = await contactDonors(request, donors);
-      request.status = "Contacted";
-      await request.save();
-    }
+    await contactFirstBatch(request);
 
     res.json({ request: serializeRequestForHospital(request) });
   } catch (err) {

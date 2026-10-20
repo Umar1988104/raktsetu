@@ -26,6 +26,18 @@ const donorSchema = new mongoose.Schema(
     // v1.8: true = not shown on the open browse list or the seeker's match map
     // (still matched and notified; visible to a seeker only after accepting).
     hideFromMap: { type: Boolean, default: false },
+    // v1.9: when this donor may be contacted. Skipped donors aren't removed from
+    // the pool; they can still see and answer requests in the app.
+    schedule: {
+      emergenciesOnly: { type: Boolean, default: false }, // never contacted for Normal requests
+      quietHours: {
+        enabled: { type: Boolean, default: false },
+        start: { type: String, default: "22:00" }, // IST, HH:MM
+        end: { type: String, default: "07:00" },
+      },
+    },
+    // Last time we emailed "you can donate again" (once per donation).
+    eligibleReminderSentAt: { type: Date, default: null },
     verified: { type: Boolean, default: false },
     fcmTokens: [{ type: String }], // registered browser push tokens, if push is set up
     donationHistory: [

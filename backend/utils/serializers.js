@@ -50,9 +50,19 @@ function serializeDonor(donorDoc, mode) {
     familyMemberId: d.familyMemberId || null,
     sex: d.sex || null,
     hideFromMap: !!d.hideFromMap,
+    schedule: {
+      emergenciesOnly: !!(d.schedule && d.schedule.emergenciesOnly),
+      quietHours: {
+        enabled: !!(d.schedule && d.schedule.quietHours && d.schedule.quietHours.enabled),
+        start: (d.schedule && d.schedule.quietHours && d.schedule.quietHours.start) || "22:00",
+        end: (d.schedule && d.schedule.quietHours && d.schedule.quietHours.end) || "07:00",
+      },
+    },
     location: d.location ? { coordinates: d.location.coordinates } : undefined,
     donationHistory: (d.donationHistory || []).map((h) => ({ _id: h._id, date: h.date })),
     nextEligibleDate: getNextEligibleDate(d),
+    // Donated before, gap is over, and not currently available: nudge them (v1.9).
+    eligibleAgain: (d.donationHistory || []).length > 0 && !getNextEligibleDate(d) && d.available === false,
     display: { name: full.name, phone: full.phone, relation: full.relation, isFamilyMember: full.isFamilyMember },
   };
 }
@@ -95,6 +105,7 @@ function serializeRequestForOwner(requestDoc, now = new Date()) {
     _id: r._id,
     status: r.status,
     bloodGroup: r.bloodGroup,
+    component: r.component || "Whole blood",
     units: r.units,
     urgency: r.urgency,
     hospital: r.hospital,
@@ -102,6 +113,8 @@ function serializeRequestForOwner(requestDoc, now = new Date()) {
     notes: r.notes,
     patientName: r.patientName,
     familyMemberId: r.familyMemberId || null,
+    neededBy: r.neededBy || null,
+    fromRecurringPlan: !!r.recurringPlan,
     hospitalVerified: r.hospitalVerified,
     thankYouNote: r.thankYouNote && r.thankYouNote.sentAt ? { message: r.thankYouNote.message, sentAt: r.thankYouNote.sentAt } : null,
     escalationRound: r.escalationRound || 0,
@@ -122,6 +135,7 @@ function serializeRequestForHospital(requestDoc) {
     _id: r._id,
     status: r.status,
     bloodGroup: r.bloodGroup,
+    component: r.component || "Whole blood",
     units: r.units,
     urgency: r.urgency,
     hospital: r.hospital,
