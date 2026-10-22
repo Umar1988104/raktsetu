@@ -1,3 +1,4 @@
+import EmptyState from "../components/EmptyState";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Tent, MapPin, Calendar, Accessibility, Plus, Pencil, Trash2 } from "lucide-react";
@@ -63,10 +64,9 @@ export default function CampsPage() {
         {camps === null ? (
           <Skeleton rows={3} />
         ) : camps.length === 0 ? (
-          <div className="empty-state">
-            <Tent size={26} className="empty-icon" />
-            <p>No upcoming camps{accessibleOnly ? " matching that filter" : ""} yet.</p>
-          </div>
+          <EmptyState art="camps" title={`No upcoming camps${accessibleOnly ? " matching that filter" : ""} yet.`}>
+            <p className="status">Hospital partners post camps here. Check back soon.</p>
+          </EmptyState>
         ) : (
           camps.map((c) => (
             <div key={c._id} className="list-row" style={{ alignItems: "flex-start" }}>

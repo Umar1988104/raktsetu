@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Clock, Zap, CheckCircle2, ShieldCheck, Info } from "lucide-react";
 import { api } from "../api";
 import Skeleton from "../components/Skeleton";
+import RequestHeatMap from "../components/RequestHeatMap";
+import CompatibilityGraph from "../components/CompatibilityGraph";
 
 const fmtMinutes = (m) => (m === null || m === undefined ? "—" : m < 60 ? `${m} min` : `${Math.round((m / 60) * 10) / 10} h`);
 const fmtPercent = (p) => (p === null || p === undefined ? "—" : `${p}%`);
@@ -146,6 +148,9 @@ export default function ImpactPage() {
           )}
         </div>
       </div>
+
+      <RequestHeatMap />
+      <CompatibilityGraph />
 
       <div className="card">
         <h3>How these are measured</h3>

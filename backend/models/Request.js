@@ -28,6 +28,11 @@ const requestSchema = new mongoose.Schema(
       default: "Searching",
     },
     hospitalVerified: { type: Boolean, default: false }, // required for Critical urgency (v0.6)
+    // v2.0: real milestones for the owner's journey view (escalations etc.). Created/notified/accepted/closed are derived from other fields.
+    timeline: {
+      type: [{ type: { type: String, enum: ["escalated", "hospital-verified", "extended", "released"] }, at: { type: Date, default: Date.now }, detail: String, _id: false }],
+      default: [],
+    },
     notes: { type: String, trim: true },
     creatorIp: { type: String }, // used for guest-account rate limiting (v1.2)
     reportedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "Donor" }], // donors who flagged this as fake

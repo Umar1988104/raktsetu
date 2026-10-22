@@ -1,3 +1,4 @@
+import EmptyState from "../components/EmptyState";
 import Switch from "../components/Switch";
 import SelfDeclaredNote from "../components/SelfDeclaredNote";
 import { useState } from "react";
@@ -80,10 +81,9 @@ export default function DonorNetworkPage() {
         {!searched ? (
           <p className="empty-note">Use the filters above and click Search.</p>
         ) : donors.length === 0 ? (
-          <div className="empty-state">
-            <Search size={26} className="empty-icon" />
-            <p>No donors match these filters yet.</p>
-          </div>
+          <EmptyState art="search" title="No donors match these filters yet.">
+            <p className="status">Try a different blood group or a wider area.</p>
+          </EmptyState>
         ) : (
           donors.map((d) => (
             <div key={d._id} className="donor-card">

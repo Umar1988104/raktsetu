@@ -15,10 +15,44 @@ import { useLang } from "../i18n";
 import LanguageToggle from "../components/LanguageToggle";
 import AppearanceButton from "../components/AppearanceSheet";
 import { BrandLockup, BridgeDivider, HeroBridge } from "../components/Brand";
+import SegmentedControl from "../components/SegmentedControl";
+import FaqList from "../components/FaqList";
+
+// "Who is this for?" — three short stories (v2.0).
+const PERSONAS = {
+  families: {
+    label: { en: "Families", hi: "परिवार" },
+    title: { en: "When someone you love needs blood", hi: "जब किसी अपने को रक्त चाहिए" },
+    points: {
+      en: ["Raise a request in under a minute — or use SOS, even without an account.", "Nearby, compatible donors are notified straight away, and you watch every step.", "For regular transfusions, repeat the request and we create each one for you."],
+      hi: ["एक मिनट से कम में अनुरोध करें — या SOS इस्तेमाल करें, बिना खाते के भी।", "पास के उपयुक्त दाताओं को तुरंत सूचना जाती है, और आप हर कदम देख सकते हैं।", "नियमित ट्रांसफ़्यूज़न के लिए अनुरोध दोहराएँ — हर बार हम बना देंगे।"],
+    },
+    cta: { label: { en: "Request blood", hi: "रक्त का अनुरोध" }, to: "/emergency" },
+  },
+  donors: {
+    label: { en: "Donors", hi: "दाता" },
+    title: { en: "Give when it matters, on your terms", hi: "ज़रूरत के वक़्त दें, अपनी शर्तों पर" },
+    points: {
+      en: ["You are matched only to compatible requests near you.", "Your phone number stays hidden until you accept.", "Set quiet hours, go emergencies-only, or stay off the map — and keep a card with your donation stamps."],
+      hi: ["आपको सिर्फ़ पास के उपयुक्त अनुरोधों से जोड़ा जाता है।", "आप स्वीकार करें, तब तक आपका फ़ोन नंबर छिपा रहता है।", "शांत समय रखें, केवल आपात चुनें, या मानचित्र से हटे रहें — और दान की मुहरों वाला कार्ड पाएँ।"],
+    },
+    cta: { label: { en: "Become a donor", hi: "दाता बनें" }, to: "/signup" },
+  },
+  hospitals: {
+    label: { en: "Hospitals", hi: "अस्पताल" },
+    title: { en: "Verified partners, real trust", hi: "सत्यापित साझेदार, असली भरोसा" },
+    points: {
+      en: ["Approved partners confirm Critical requests before donors are contacted.", "Verify donors in bulk and look them up by card ID, not by phone number.", "Post and manage donation camps; every approval is checked by an admin first."],
+      hi: ["मंज़ूर साझेदार गंभीर अनुरोधों की पुष्टि करते हैं, उसके बाद ही दाताओं से संपर्क होता है।", "दाताओं को एक साथ सत्यापित करें और फ़ोन नंबर की जगह कार्ड आईडी से खोजें।", "रक्तदान शिविर डालें और संभालें; हर मंज़ूरी पहले एडमिन जाँचता है।"],
+    },
+    cta: { label: { en: "Join as a hospital", hi: "अस्पताल के रूप में जुड़ें" }, to: "/signup" },
+  },
+};
 
 export default function Landing() {
   const { t, lang } = useLang();
   const [stats, setStats] = useState(null);
+  const [persona, setPersona] = useState("families");
 
   useEffect(() => {
     api.get("/api/stats").then(setStats).catch(() => {});
@@ -143,6 +177,34 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ---------- Who it's for ---------- */}
+      <section className="landing-section">
+        <div className="section-inner">
+          <p className="section-kicker">{lang === "hi" ? "किसके लिए" : "Who it's for"}</p>
+          <h2>{lang === "hi" ? "श्रृंखला की हर कड़ी के लिए।" : "Built for everyone in the chain."}</h2>
+          <SegmentedControl
+            label={lang === "hi" ? "कौन?" : "Who?"}
+            value={persona}
+            onChange={setPersona}
+            options={Object.entries(PERSONAS).map(([value, p]) => ({ value, label: p.label[lang] || p.label.en }))}
+          />
+          {(() => {
+            const p = PERSONAS[persona];
+            return (
+              <div className="persona-card" key={persona}>
+                <h3>{p.title[lang] || p.title.en}</h3>
+                <ul>
+                  {(p.points[lang] || p.points.en).map((x) => (
+                    <li key={x}>{x}</li>
+                  ))}
+                </ul>
+                <Link to={p.cta.to} className="btn-primary">{p.cta.label[lang] || p.cta.label.en}</Link>
+              </div>
+            );
+          })()}
+        </div>
+      </section>
+
       <BridgeDivider />
 
       {/* ---------- Differentiation ---------- */}
@@ -195,6 +257,15 @@ export default function Landing() {
               </p>
             </>
           )}
+        </div>
+      </section>
+
+      {/* ---------- FAQ ---------- */}
+      <section className="landing-section alt" id="faq">
+        <div className="section-inner">
+          <p className="section-kicker">{lang === "hi" ? "सवाल-जवाब" : "FAQ"}</p>
+          <h2>{lang === "hi" ? "लोग अक्सर क्या पूछते हैं" : "Questions people ask"}</h2>
+          <FaqList limit={8} />
         </div>
       </section>
 

@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
       <div className="page" style={{ maxWidth: 720 }}>
         <div className="page-header">
           <h1>Privacy Policy</h1>
-          <p>Last updated: 20 October 2026 (v1.9). A plain-language explanation of what we actually store and why.</p>
+          <p>Last updated: 22 October 2026 (v2.0). A plain-language explanation of what we actually store and why.</p>
         </div>
 
         <div className="card">
@@ -88,6 +88,21 @@ export default function PrivacyPolicyPage() {
             donated before and enough time has passed, we send one email telling you that you can donate
             again, once per donation. Platelet and plasma requests use the same donation gap as blood to
             be safe; the blood bank always makes the final eligibility decision.
+          </p>
+        </div>
+
+        <div className="card">
+          <h3>The public request map and your device</h3>
+          <p>
+            The Impact page shows a map of where blood was requested in the last 90 days. It is
+            built only from counts: requests are grouped into areas about 11 km wide, an area is shown
+            only when it has at least 5 requests, and nothing else (no names, hospitals, exact places or
+            request details) is included.
+          </p>
+          <p>
+            A few small things are remembered only in your own browser: notifications you dismissed, a
+            hidden setup checklist, requests whose thank-you you've seen, and your display choices. They
+            are never sent to us, and clearing your browser data removes them.
           </p>
         </div>
 

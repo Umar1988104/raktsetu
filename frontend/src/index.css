@@ -602,6 +602,8 @@ form button { margin-top: var(--sp-2); width: 100%; min-height: var(--tap); }
 .empty-state { text-align: center; padding: var(--sp-6) var(--sp-3); color: var(--text-soft); }
 .empty-state .emoji { margin-bottom: var(--sp-1); display: flex; justify-content: center; }
 .empty-icon { color: var(--border-strong); margin-bottom: var(--sp-1); }
+.empty-art { width: 180px; max-width: 70%; height: auto; margin: 0 auto var(--sp-1); display: block; }
+.empty-title { font-weight: 600; color: var(--text); margin: 0 0 var(--sp-1); }
 .empty-note { border: 1px dashed var(--border-strong); border-radius: var(--r-md); padding: var(--sp-2); color: var(--text-soft); font-size: 0.88rem; text-align: center; }
 
 /* Dashboard: live strip, quick actions, tip */
@@ -1009,6 +1011,99 @@ form .wizard-actions button { margin-top: 0; width: auto; }
 .focus-card { border-left: 4px solid var(--brand); }
 .time-row { display: flex; gap: var(--sp-2); }
 .time-row > div { flex: 1; }
+
+
+/* ---------- 12. v2.0: hero motion, personas, FAQ ---------- */
+.hb-pulse { transform-box: fill-box; transform-origin: center; animation: hb-pulse 2.6s ease-out infinite; opacity: 0; }
+.hb-pulse-b { animation-delay: 1.3s; }
+@keyframes hb-pulse { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(2.4); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hb-pulse { animation: none; opacity: 0.5; transform: scale(1.3); } }
+
+.persona-card { margin-top: var(--sp-3); background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--sp-3); max-width: 720px; animation: persona-in 0.35s var(--ease-ios) both; }
+.persona-card h3 { font-size: 1.15rem; margin-bottom: var(--sp-2); }
+.persona-card ul { margin: 0 0 var(--sp-3); padding-left: 20px; color: var(--text-soft); display: grid; gap: var(--sp-1); }
+@keyframes persona-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.faq { max-width: 760px; }
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-item h3 { margin: 0; font-size: 1rem; letter-spacing: 0; }
+.faq-q { width: 100%; justify-content: space-between; text-align: left; background: transparent; color: var(--text); padding: var(--sp-2) 0; min-height: var(--tap); border-radius: 0; font-weight: 600; font-size: 1rem; gap: var(--sp-2); }
+@media (hover: hover) { .faq-q:hover:not(:disabled) { background: transparent; color: var(--brand-text); } }
+.faq-q:active:not(:disabled) { transform: none; }
+.faq-chevron { flex: none; transition: transform 0.25s var(--ease-ios); }
+.faq-item.open .faq-chevron { transform: rotate(180deg); }
+.faq-a { padding: 0 0 var(--sp-2); }
+.faq-a p { margin: 0 0 var(--sp-2); color: var(--text-soft); }
+
+
+/* ---------- 13. v2.0: journey, map key, fulfilled ---------- */
+.journey { list-style: none; margin: 0; padding: 0; }
+.journey-item { position: relative; display: flex; gap: 12px; padding-bottom: var(--sp-2); }
+.journey-item:not(:last-child)::before { content: ""; position: absolute; left: 15px; top: 32px; bottom: 0; width: 2px; background: var(--border); }
+.journey-icon { flex: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--brand-soft); color: var(--brand-text); }
+.journey-item.type-accepted .journey-icon, .journey-item.type-fulfilled .journey-icon { background: var(--green-soft); color: var(--green); }
+.journey-item.type-expired .journey-icon { background: var(--surface-2); color: var(--text-soft); }
+.journey-item.type-hospital-verified .journey-icon { background: var(--purple-soft); color: var(--purple); }
+.journey-title { font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; }
+.journey-detail { font-size: 0.85rem; color: var(--text-soft); }
+.journey-time { font-size: 0.78rem; color: var(--text-soft); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.journey-live .journey-icon { background: var(--surface-2); color: var(--text-soft); }
+
+.map-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: var(--sp-1); font-size: 0.8rem; color: var(--text-soft); }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--border-strong); }
+.legend-ring { width: 14px; height: 14px; border-radius: 50%; border: 2px dashed #0F766E; }
+
+.fulfilled-moment { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); margin-bottom: var(--sp-3); background: var(--green-soft); border: 1px solid var(--green); border-radius: var(--r-lg); color: var(--text); }
+.fulfilled-moment h3 { margin: 0 0 4px; }
+.fulfilled-moment p { margin: 0; color: var(--text-soft); font-size: 0.9rem; }
+.fulfilled-check { position: relative; flex: none; color: var(--green); width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; }
+.fulfilled-ring { position: absolute; inset: 4px; border-radius: 50%; border: 2px solid var(--green); animation: ripple 2.8s ease-out 2; opacity: 0; }
+@keyframes ripple { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.6); opacity: 0; } }
+.fulfilled-moment > button { margin: 0 0 0 auto; flex: none; }
+@media (max-width: 680px) { .fulfilled-moment { flex-wrap: wrap; } .fulfilled-moment > button { width: 100%; margin: 0; } }
+@media (prefers-reduced-motion: reduce) { .fulfilled-ring { animation: none; } }
+
+
+/* ---------- 14. v2.0: checklist ---------- */
+.checklist-head { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+.checklist-head > div { flex: 1; min-width: 0; }
+.checklist-head h3 { margin: 0 0 2px; }
+.progress-ring { width: 56px; height: 56px; flex: none; }
+.checklist-items { list-style: none; margin: 0; padding: 0; }
+.checklist-items li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 0.92rem; }
+.checklist-items .check-dot { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border-strong); display: flex; align-items: center; justify-content: center; color: var(--on-brand); }
+.checklist-items li.done .check-dot { background: var(--green); border-color: var(--green); }
+.checklist-items li.done .check-label { color: var(--text-soft); text-decoration: line-through; }
+.checklist-items .check-label { flex: 1; min-width: 0; }
+.checklist-items small { color: var(--text-soft); }
+.checklist-items .btn-outline { min-height: 32px; padding: 4px 12px; font-size: 0.82rem; }
+
+
+/* ---------- 15. v2.0: compatibility graph ---------- */
+.compat { display: grid; grid-template-columns: minmax(0, 360px) 1fr; gap: var(--sp-3); align-items: center; }
+.compat-svg { width: 100%; height: auto; }
+.compat-text p { margin: 0 0 var(--sp-1); }
+@media (max-width: 760px) { .compat { grid-template-columns: 1fr; } }
+
+
+/* ---------- 16. v2.0: notification centre ---------- */
+.notif-group-title { font-size: 0.78rem; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.05em; margin: var(--sp-2) 0 var(--sp-1); }
+.notif-group-title:first-child { margin-top: 0; }
+.notif-group-title.urgent-title { color: var(--danger-text); }
+.notif-item.critical { border-left: 4px solid var(--danger); padding-left: var(--sp-2); background: var(--danger-soft); border-radius: var(--r-md); }
+.swipe-row { position: relative; overflow: hidden; }
+.swipe-bg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; padding-right: var(--sp-3); background: var(--surface-2); color: var(--text-soft); font-weight: 700; font-size: 0.85rem; }
+.swipe-fg { position: relative; background: var(--surface); }
+.swipe-x { position: absolute; top: 6px; right: 0; width: 28px; min-height: 28px; height: 28px; padding: 0; border-radius: 50%; background: transparent; color: var(--text-soft); opacity: 0.7; }
+@media (hover: hover) { .swipe-x:hover:not(:disabled) { background: var(--surface-2); color: var(--text); opacity: 1; } }
+
+/* Pull to refresh (v2.0) */
+.ptr { position: fixed; left: 50%; top: calc(var(--topbar-h) + var(--safe-top) + 4px); z-index: 25; width: 36px; height: 36px; margin-left: -18px; border-radius: 50%; background: var(--surface-raised); box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: center; color: var(--brand-text); pointer-events: none; opacity: 0; will-change: transform, opacity; }
+.ptr.spinning svg { animation: ptr-spin 0.9s linear infinite; }
+@keyframes ptr-spin { to { transform: rotate(360deg); } }
+html.has-ptr { overscroll-behavior-y: contain; }
+
 
 /* Visually hidden, still read by screen readers */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }

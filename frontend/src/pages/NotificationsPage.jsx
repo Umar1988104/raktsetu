@@ -1,3 +1,8 @@
+import EmptyState from "../components/EmptyState";
+import SwipeRow from "../components/SwipeRow";
+import { useRefreshHandler } from "../context/RefreshContext";
+import useDismissed from "../hooks/useDismissed";
+import { groupByDay } from "../dayGroups";
 import { useEffect, useState } from "react";
 import Skeleton from "../components/Skeleton";
 import ContactButtons from "../components/ContactButtons";
@@ -5,7 +10,7 @@ import { requestHeadline, formatNeededBy } from "../requestFormat";
 import * as m from "motion/react-m";
 import { StaggerList, staggerItem } from "../motion/kit";
 import { Link } from "react-router-dom";
-import { Bell, Check, X, Droplet, Flag, Heart } from "lucide-react";
+import { Check, X, Droplet, Flag, Heart } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
 import { useConfirm } from "../components/UiFeedback";
@@ -23,13 +28,16 @@ function DonorInbox() {
   const [busyKey, setBusyKey] = useState(null);
 
   function load() {
-    api
+    return api
       .get("/api/donors/me/incoming-requests")
       .then((d) => setIncoming(d.incoming))
       .catch((err) => setError(err.message));
   }
 
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useRefreshHandler(load); // pull down to refresh on a phone
 
   async function reportFake(requestId) {
     const ok = await askConfirm({
@@ -60,34 +68,19 @@ function DonorInbox() {
     }
   }
 
-  return (
-    <div>
-      <div className="page-header">
-        <h1>Notifications</h1>
-        <p>Requests that matched your blood group and location.</p>
-      </div>
+  const { dismissed, dismiss, restoreAll } = useDismissed("donor-inbox");
+  const [showDismissed, setShowDismissed] = useState(false);
+  const keyOf = (r) => `${r.requestId}:${r.donorId}`;
+  const isActionable = (r) => r.myResponse === "Pending" && !r.closed;
+  const rank = { Critical: 0, Urgent: 1, Normal: 2 };
+  const visible = (incoming || []).filter((r) => isActionable(r) || showDismissed || !dismissed.has(keyOf(r)));
+  const needs = visible.filter(isActionable).sort((a, b) => (rank[a.urgency] ?? 3) - (rank[b.urgency] ?? 3) || new Date(b.notifiedAt) - new Date(a.notifiedAt));
+  const rest = visible.filter((r) => !isActionable(r));
 
-      <div className="card">
-        {error && <p className="error">{error}</p>}
-        {!incoming ? (
-          <Skeleton rows={3} />
-        ) : incoming.length === 0 ? (
-          <div className="empty-state">
-            <div className="emoji">
-              <Bell size={30} style={{ margin: "0 auto" }} />
-            </div>
-            <p>No requests have matched you yet.</p>
-            <p style={{ fontSize: "0.82rem", marginTop: 4 }}>
-              Make sure a profile under your account is marked "Available" — that's how you show
-              up in matching.
-            </p>
-          </div>
-        ) : (
-          <StaggerList>
-          {incoming.map((r) => {
-            const key = `${r.requestId}:${r.donorId}`;
-            return (
-              <m.div key={key} variants={staggerItem} layout="position" className="list-row" style={{ alignItems: "flex-start" }}>
+  const renderItem = (r) => {
+    const key = keyOf(r);
+    return (
+              <m.div key={key} variants={staggerItem} layout="position" className={`list-row notif-item ${isActionable(r) && r.urgency === "Critical" ? "critical" : ""}`} style={{ alignItems: "flex-start" }}>
                 <div className="list-row-main">
                   <div className="row-icon" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
                     <Droplet size={16} />
@@ -95,6 +88,7 @@ function DonorInbox() {
                   <div>
                     <div className="row-title">
                       {requestHeadline(r)} · {r.urgency}
+                      {isActionable(r) && r.urgency === "Critical" && <span className="pill pill-urgent" style={{ marginLeft: 8 }}>Critical — please respond</span>}
                     </div>
                     {r.neededBy && <div className="row-sub">Needed by {formatNeededBy(r.neededBy)}</div>}
                     <div className="row-sub">
@@ -164,9 +158,57 @@ function DonorInbox() {
                   </span>
                 )}
               </m.div>
-            );
-          })}
-          </StaggerList>
+    );
+  };
+
+  return (
+    <div>
+      <div className="page-header">
+        <h1>Notifications</h1>
+        <p>Requests that matched your blood group and location.</p>
+      </div>
+
+      <div className="card">
+        {error && <p className="error">{error}</p>}
+        {!incoming ? (
+          <Skeleton rows={3} />
+        ) : incoming.length === 0 ? (
+          <EmptyState art="notifications" title="No requests have matched you yet.">
+            <p className="status">
+              Make sure a profile under your account is marked "Available" — that's how you show
+              up in matching.
+            </p>
+          </EmptyState>
+        ) : (
+          <>
+            {needs.length > 0 && (
+              <section aria-label="Needs your answer">
+                <h2 className="notif-group-title urgent-title">Needs your answer</h2>
+                <StaggerList>{needs.map((r) => renderItem(r))}</StaggerList>
+              </section>
+            )}
+            {groupByDay(rest, (r) => r.notifiedAt).map((g) => (
+              <section key={g.label} aria-label={g.label}>
+                <h2 className="notif-group-title">{g.label}</h2>
+                <StaggerList>
+                  {g.items.map((r) => (
+                    <SwipeRow key={keyOf(r)} onDismiss={() => dismiss(keyOf(r))}>
+                      {renderItem(r)}
+                    </SwipeRow>
+                  ))}
+                </StaggerList>
+              </section>
+            ))}
+            {dismissed.size > 0 && (
+              <p className="status" style={{ textAlign: "center", marginTop: 16 }}>
+                <button type="button" className="linklike" onClick={() => (showDismissed ? setShowDismissed(false) : setShowDismissed(true))}>
+                  {showDismissed ? "Hide dismissed" : `Show dismissed (${dismissed.size})`}
+                </button>
+                {" · "}
+                <button type="button" className="linklike" onClick={restoreAll}>Restore all</button>
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -176,18 +218,22 @@ function DonorInbox() {
 function SeekerFeed() {
   const [requests, setRequests] = useState(null);
 
-  useEffect(() => {
+  const load = () =>
     api
       .get("/api/requests/me")
       .then((d) => setRequests(d.requests))
       .catch(() => {});
-  }, []);
+  useEffect(() => {
+    load();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useRefreshHandler(load); // pull down to refresh on a phone
 
+  const { dismissed, dismiss, restoreAll } = useDismissed("seeker-feed");
+  const [showDismissed, setShowDismissed] = useState(false);
   // Flatten every contactedDonors response across all of this seeker's requests into one feed.
-  const events =
-    requests
-      ?.flatMap((r) => r.contactedDonors.filter((c) => c.status !== "Pending").map((c) => ({ ...c, request: r })))
-      .sort((a, b) => new Date(b.respondedAt) - new Date(a.respondedAt)) || [];
+  const keyOf = (e) => `${e.request._id}:${e._id || e.respondedAt}`;
+  const events = (requests?.flatMap((r) => r.contactedDonors.filter((c) => c.status !== "Pending").map((c) => ({ ...c, request: r }))) || []).filter((e) => showDismissed || !dismissed.has(keyOf(e)));
+  const groups = groupByDay(events, (e) => e.respondedAt);
 
   return (
     <div>
@@ -200,18 +246,19 @@ function SeekerFeed() {
         {!requests ? (
           <Skeleton rows={3} />
         ) : events.length === 0 ? (
-          <div className="empty-state">
-            <div className="emoji">
-              <Bell size={30} style={{ margin: "0 auto" }} />
-            </div>
-            <p>No donor responses yet.</p>
-            <p style={{ fontSize: "0.82rem", marginTop: 4 }}>
+          <EmptyState art="notifications" title="No donor responses yet.">
+            <p className="status">
               As soon as a matched donor accepts or declines, it'll show up here.
             </p>
-          </div>
+          </EmptyState>
         ) : (
-          events.map((e, i) => (
-            <Link key={i} to={`/requests/${e.request._id}`} className="list-row" style={{ color: "inherit" }}>
+          <>
+            {groups.map((g) => (
+              <section key={g.label} aria-label={g.label}>
+                <h2 className="notif-group-title">{g.label}</h2>
+                {g.items.map((e) => (
+                  <SwipeRow key={keyOf(e)} onDismiss={() => dismiss(keyOf(e))}>
+            <Link to={`/requests/${e.request._id}`} className="list-row" style={{ color: "inherit" }}>
               <div className="list-row-main">
                 <div
                   className="row-icon"
@@ -235,7 +282,20 @@ function SeekerFeed() {
               </div>
               <span className="row-time">{new Date(e.respondedAt).toLocaleString()}</span>
             </Link>
-          ))
+                  </SwipeRow>
+                ))}
+              </section>
+            ))}
+            {dismissed.size > 0 && (
+              <p className="status" style={{ textAlign: "center", marginTop: 16 }}>
+                <button type="button" className="linklike" onClick={() => setShowDismissed((v) => !v)}>
+                  {showDismissed ? "Hide dismissed" : `Show dismissed (${dismissed.size})`}
+                </button>
+                {" · "}
+                <button type="button" className="linklike" onClick={restoreAll}>Restore all</button>
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>

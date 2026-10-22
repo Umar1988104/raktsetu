@@ -231,6 +231,7 @@ router.post("/:id/extend", verifyToken, async (req, res) => {
     const schedule = rules.initialSchedule(request.urgency);
     request.expiresAt = schedule.expiresAt;
     request.extensions = (request.extensions || 0) + 1;
+    request.timeline = [...(request.timeline || []), { type: "extended", at: new Date(), detail: "You confirmed you still need blood" }];
     request.escalationRound = 0;
     request.nextEscalationAt = request.urgency === "Critical" && !request.hospitalVerified ? null : schedule.nextEscalationAt;
     await request.save();
@@ -359,6 +360,7 @@ router.patch("/:id/verify-hospital", verifyToken, async (req, res) => {
 
     const schedule = rules.initialSchedule(request.urgency);
     request.hospitalVerified = true;
+    request.timeline = [...(request.timeline || []), { type: "hospital-verified", at: new Date(), detail: "A hospital partner confirmed this request" }];
     request.expiresAt = schedule.expiresAt;
     request.nextEscalationAt = schedule.nextEscalationAt;
     request.escalationRound = 0;

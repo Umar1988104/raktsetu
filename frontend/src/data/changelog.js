@@ -2,6 +2,20 @@
 // invented dates. Edit freely as you ship more.
 export const CHANGELOG = [
   {
+    version: "v2.0",
+    date: "2026-10-22",
+    title: "Live experience & visuals",
+    items: [
+      "The home page now shows a donor and a patient joined by the bridge, with a pulse crossing it — plus short stories for families, donors and hospitals, and an FAQ",
+      "Every request has a journey view: created, donors notified, search widened, accepted, fulfilled — with the real times",
+      "The request page refreshes itself, and a calm thank-you appears when your request is fulfilled",
+      "A better map: a search-radius circle, pins coloured by distance, and nearby pins merged into numbered bubbles",
+      "A setup checklist with a progress ring; friendly illustrations on empty screens and a proper “page not found”",
+      "New on the Impact page: where blood is being requested (private, only larger areas) and who can give to whom",
+      "Notifications grouped by day with urgent ones first, swipe to dismiss; pull down to refresh and swipe in from the edge to open the menu on a phone",
+    ],
+  },
+  {
     version: "v1.9",
     date: "2026-10-20",
     title: "Smarter requests & donor tools",

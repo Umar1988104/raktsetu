@@ -170,6 +170,10 @@ const HI = {
   "Repeat this request": "इस अनुरोध को दोहराएँ",
   "Contact preferences": "संपर्क की पसंद",
   "Call": "कॉल करें",
+  // v2.0 (needs native-speaker review)
+  "Journey of this request": "इस अनुरोध की यात्रा",
+  "Finish setting up": "सेटअप पूरा करें",
+  "Needs your answer": "आपके जवाब का इंतज़ार",
 };
 
 const LanguageContext = createContext({ lang: "en", setLang: () => {}, t: (s) => s });

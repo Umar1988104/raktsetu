@@ -3,6 +3,7 @@ const Donor = require("../models/Donor");
 const Request = require("../models/Request");
 const User = require("../models/User");
 const { computeImpact, computeAreaStats } = require("../utils/impact");
+const { buildHeatCells, WINDOW_DAYS, MIN_PER_CELL, CELL_DEG } = require("../utils/heatmap");
 
 // True if any sample data from seed-demo.js is present — the UI must say so.
 async function hasDemoData() {
@@ -23,7 +24,7 @@ router.get("/", async (req, res) => {
         Request.countDocuments({}),
         Request.countDocuments({ status: "Fulfilled" }),
         Donor.aggregate([{ $group: { _id: "$bloodGroup", count: { $sum: 1 } } }]),
-        User.find({ role: "hospital" }).select("hospitalName").sort({ createdAt: 1 }).limit(12),
+        User.find({ role: "hospital", partnerVerified: true }).select("hospitalName").sort({ createdAt: 1 }).limit(12),
         Request.countDocuments({ status: { $in: OPEN } }),
         Request.countDocuments({ status: { $in: OPEN }, urgency: "Critical" }),
       ]);
@@ -48,6 +49,27 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Public, aggregate-only map of where blood was requested recently (v2.0).
+// Cells with fewer than MIN_PER_CELL requests are never returned.
+router.get("/heatmap", async (req, res) => {
+  try {
+    const since = new Date(Date.now() - WINDOW_DAYS * 24 * 3600e3);
+    const requests = await Request.find({ createdAt: { $gte: since } }).select("location").limit(5000).lean();
+    const { cells, hiddenCells } = buildHeatCells(requests);
+    res.json({
+      cells,
+      hiddenCells,
+      windowDays: WINDOW_DAYS,
+      minPerCell: MIN_PER_CELL,
+      cellKm: Math.round(CELL_DEG * 111),
+      demoDataIncluded: await hasDemoData(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load the request map" });
+  }
+});
+
 // Public success metrics from the project brief — aggregates only, no personal data.
 router.get("/impact", async (req, res) => {
   try {
@@ -58,7 +80,7 @@ router.get("/impact", async (req, res) => {
         .limit(2000)
         .lean(),
       Donor.find({}).select("area available verified").limit(5000).lean(),
-      User.countDocuments({ role: "hospital" }),
+      User.countDocuments({ role: "hospital", partnerVerified: true }),
       Donor.countDocuments({}),
       Donor.countDocuments({ verified: true }),
       hasDemoData(),

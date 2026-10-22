@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Skeleton from "../components/Skeleton";
 import { useParams } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { playFlipIn } from "../utils/flip";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Check, Clock, CalendarClock } from "lucide-react";
@@ -12,6 +12,10 @@ import ReadAloudButton from "../components/ReadAloudButton";
 import ShareRequestButton from "../components/ShareRequestButton";
 import SelfDeclaredNote from "../components/SelfDeclaredNote";
 import ContactButtons from "../components/ContactButtons";
+import MatchMap from "../components/MatchMap";
+import RequestTimeline from "../components/RequestTimeline";
+import FulfilledMoment from "../components/FulfilledMoment";
+import { useRefreshHandler } from "../context/RefreshContext";
 import { requestHeadline, formatNeededBy } from "../requestFormat";
 
 const STAGES = ["Searching", "Contacted", "Confirmed", "Fulfilled"];
@@ -34,6 +38,7 @@ function pinIcon(color, label) {
 
 export default function RequestStatusPage() {
   const { id } = useParams();
+  const titleRef = useRef(null);
   const [request, setRequest] = useState(null);
   const [matchData, setMatchData] = useState(null);
   const [error, setError] = useState("");
@@ -42,19 +47,40 @@ export default function RequestStatusPage() {
   const toast = useToast();
 
   function load() {
-    api
-      .get(`/api/requests/${id}`)
-      .then((d) => setRequest(d.request))
-      .catch((err) => setError(err.message));
-    api
-      .get(`/api/requests/${id}/matches`)
-      .then(setMatchData)
-      .catch(() => {});
+    return Promise.all([
+      api
+        .get(`/api/requests/${id}`)
+        .then((d) => setRequest(d.request))
+        .catch((err) => setError(err.message)),
+      api
+        .get(`/api/requests/${id}/matches`)
+        .then(setMatchData)
+        .catch(() => {}),
+    ]);
   }
+  useRefreshHandler(load); // pull down to refresh on a phone
+
+  // Glide the heading in from where the opened list row was (once per visit).
+  const flipped = useRef(false);
+  useEffect(() => {
+    if (request && !flipped.current) {
+      flipped.current = true;
+      playFlipIn(id, titleRef.current);
+    }
+  }, [request, id]);
 
   useEffect(() => {
     load();
   }, [id]);
+
+  // "Live" (v2.0): while a request is open and this tab is showing, refresh quietly every 20 seconds.
+  useEffect(() => {
+    if (!request || ["Fulfilled", "Expired"].includes(request.status)) return;
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") load();
+    }, 20000);
+    return () => clearInterval(timer);
+  }, [id, request?.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function advanceStatus(newStatus) {
     setBusy(true);
@@ -114,7 +140,7 @@ export default function RequestStatusPage() {
     <div>
       <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
         <div>
-          <h1>{requestHeadline(request)}</h1>
+          <h1 ref={titleRef}>{requestHeadline(request)}</h1>
           <p>
             Track the status of your blood request in real time.
             {request.patientName && <> For {request.patientName}.</>}
@@ -124,6 +150,8 @@ export default function RequestStatusPage() {
           text={`${request.bloodGroup}${request.component && request.component !== "Whole blood" ? " " + request.component : ""}, ${request.units} units, ${request.urgency} urgency, at ${request.hospital}. Current status: ${request.status}.${request.patientName ? ` For ${request.patientName}.` : ""}`}
         />
       </div>
+
+      {request.status === "Fulfilled" && <FulfilledMoment requestId={request._id} />}
 
       {request.lifecycle?.scheduled && (
         <div className="banner banner-info" role="status">
@@ -288,6 +316,8 @@ export default function RequestStatusPage() {
           )}
         </div>
 
+        <RequestTimeline request={request} />
+
         <div className="card">
           <h3>Nearby compatible donors</h3>
           <SelfDeclaredNote />
@@ -297,32 +327,7 @@ export default function RequestStatusPage() {
             <p className="empty-note">No available, compatible donors found nearby yet.</p>
           ) : (
             <>
-              <div className="map-wrap">
-                <MapContainer
-                  center={[matchData.request.coordinates[1], matchData.request.coordinates[0]]}
-                  zoom={11}
-                  style={{ height: "100%", width: "100%" }}
-                >
-                  <TileLayer
-                    attribution="&copy; OpenStreetMap contributors"
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  <Marker
-                    position={[matchData.request.coordinates[1], matchData.request.coordinates[0]]}
-                    icon={pinIcon("#E6364A", "R")}
-                  >
-                    <Popup>Your request location</Popup>
-                  </Marker>
-                  {matchData.matches.map((m, i) => (
-                    <Marker key={m._id} position={[m.coordinates[1], m.coordinates[0]]} icon={pinIcon("#2F80ED", i + 1)}>
-                      <Popup>
-                        {m.donor?.name}
-                        {m.donor?.relation && ` (${m.donor.relation})`} · {m.bloodGroup} · {m.distanceKm} km
-                      </Popup>
-                    </Marker>
-                  ))}
-                </MapContainer>
-              </div>
+              <MatchMap request={matchData.request} matches={matchData.matches} requestIcon={pinIcon("#C62839", "R")} />
               <ul className="match-list">
                 {matchData.matches.map((m, i) => (
                   <li key={m._id}>

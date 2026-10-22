@@ -84,6 +84,8 @@ export function fixtures(role = "donor", opts = {}) {
     "GET /api/cards/mine": { guest: false, cards: CARDS },
     "GET /api/cards/public/RS-7K4M-9QX2": { card: { kind: "member", name: "Umar S.", bloodGroup: "O+", tier: "Trusted", verified: true } },
     "GET /api/cards/public/RS-PARTNR": { card: { kind: "partner", hospitalName: "City Hospital", verifiedPartner: false } },
+    "GET /api/stats/impact": { totalRequests: 0, removedAsFake: 0, responseTime: { repliedSample: 0, avgFirstReplyMinutes: null, medianFirstReplyMinutes: null, acceptedSample: 0, avgFirstAcceptMinutes: null, medianFirstAcceptMinutes: null }, urgentCoverage: { windowMinutes: 30, eligible: 0, acceptedWithinWindow: 0, percent: null }, outcomes: { fulfilled: 0, expired: 0, open: 0, closed: 0, fulfilmentRate: null, expiredBreakdown: {} }, donorsByArea: [{ area: "Saket", total: 3, available: 2, verified: 1 }], totals: { donors: 3, verifiedDonors: 1, hospitalPartners: 1 }, demoDataIncluded: false, generatedAt: new Date().toISOString() },
+    "GET /api/stats/heatmap": { cells: [], hiddenCells: 0, windowDays: 90, minPerCell: 5, cellKm: 11, demoDataIncluded: false },
     "GET /api/admin/overview": { users: { donors: 1, seekers: 1, hospitals: 1 }, openRequests: 0, reportedRequests: 0, throttledUsers: 0 },
     "GET /api/admin/reported": { requests: [] },
     "GET /api/admin/throttled": { users: [] },

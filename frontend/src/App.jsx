@@ -34,6 +34,7 @@ const ImpactPage = lazy(() => import("./pages/ImpactPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const MyCardPage = lazy(() => import("./pages/MyCardPage"));
 const PublicCardPage = lazy(() => import("./pages/PublicCardPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 export default function App() {
   return (
@@ -92,6 +93,7 @@ export default function App() {
             <Route path="/card" element={<MyCardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </AuthProvider>

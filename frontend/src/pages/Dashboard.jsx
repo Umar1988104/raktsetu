@@ -1,3 +1,6 @@
+import EmptyState from "../components/EmptyState";
+import { useRefreshHandler } from "../context/RefreshContext";
+import OnboardingChecklist from "../components/OnboardingChecklist";
 import { requestHeadline, formatNeededBy, displayStatus } from "../requestFormat";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -30,27 +33,38 @@ export default function Dashboard() {
   const [pendingForMe, setPendingForMe] = useState(null); // donor: requests awaiting their answer
   const [pendingVerify, setPendingVerify] = useState(null); // hospital: Critical requests awaiting verification
 
-  useEffect(() => {
-    api.get("/api/stats").then(setStats).catch(() => {});
-    api.get("/api/camps").then((d) => setCamps(d.camps.slice(0, 3))).catch(() => setCamps([]));
+  const loadAll = () => {
+    const jobs = [];
+    jobs.push(api.get("/api/stats").then(setStats).catch(() => {}));
+    jobs.push(api.get("/api/camps").then((d) => setCamps(d.camps.slice(0, 3))).catch(() => setCamps([])));
 
     if (role === "seeker") {
-      api.get("/api/requests/me").then((d) => setRequests(d.requests)).catch(() => {});
+      jobs.push(api.get("/api/requests/me").then((d) => setRequests(d.requests)).catch(() => {}));
     }
     if (role === "donor") {
-      api.get("/api/donors/me").then((d) => setDonors(d.donors)).catch(() => setDonors([]));
-      api
-        .get("/api/donors/me/incoming-requests")
-        .then((d) => setPendingForMe(d.incoming.filter((i) => i.myResponse === "Pending").length))
-        .catch(() => setPendingForMe(0));
+      jobs.push(api.get("/api/donors/me").then((d) => setDonors(d.donors)).catch(() => setDonors([])));
+      jobs.push(
+        api
+          .get("/api/donors/me/incoming-requests")
+          .then((d) => setPendingForMe(d.incoming.filter((i) => i.myResponse === "Pending").length))
+          .catch(() => setPendingForMe(0))
+      );
     }
     if (role === "hospital") {
-      api
-        .get("/api/requests/pending-verification")
-        .then((d) => setPendingVerify(d.requests.length))
-        .catch(() => setPendingVerify(0));
+      jobs.push(
+        api
+          .get("/api/requests/pending-verification")
+          .then((d) => setPendingVerify(d.requests.length))
+          .catch(() => setPendingVerify(0))
+      );
     }
-  }, [role]);
+    return Promise.all(jobs);
+  };
+
+  useEffect(() => {
+    loadAll();
+  }, [role]); // eslint-disable-line react-hooks/exhaustive-deps
+  useRefreshHandler(loadAll); // pull down to refresh on a phone
 
   const chartData = stats?.byBloodGroup
     ? Object.entries(stats.byBloodGroup).map(([group, count]) => ({ name: group, value: count }))
@@ -93,6 +107,8 @@ export default function Dashboard() {
       )}
       {role === "hospital" && <PendingVerifyCard count={pendingVerify} t={t} />}
 
+      {role !== "hospital" && <OnboardingChecklist donors={donors} />}
+
       <LiveStrip stats={stats} t={t} />
 
       <RecurringCareReminders familyMembers={profile?.user?.familyMembers} />
@@ -131,13 +147,11 @@ export default function Dashboard() {
                 )}
               </div>
               {recent.length === 0 ? (
-                <div className="empty-state">
-                  <Droplet size={26} className="empty-icon" />
-                  <p>No requests yet.</p>
+                <EmptyState art="requests" title="No requests yet.">
                   <Link to="/requests/new" className="btn-primary" style={{ marginTop: 12 }}>
                     Create your first request
                   </Link>
-                </div>
+                </EmptyState>
               ) : (
                 recent.map((r) => (
                   <Link key={r._id} to={`/requests/${r._id}`} className="list-row" style={{ color: "inherit" }}>

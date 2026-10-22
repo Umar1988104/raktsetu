@@ -1,5 +1,7 @@
+import EmptyState from "../components/EmptyState";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { rememberRow } from "../utils/flip";
 import { Droplet, ChevronRight, Repeat } from "lucide-react";
 import { api } from "../api";
 import StatusPill from "../components/StatusPill";
@@ -9,6 +11,7 @@ import Switch from "../components/Switch";
 import { useAuth } from "../context/AuthContext";
 import { useConfirm, useToast } from "../components/UiFeedback";
 import { StaggerList, MLink, staggerItem } from "../motion/kit";
+import { useRefreshHandler } from "../context/RefreshContext";
 import { requestHeadline, formatNeededBy, displayStatus } from "../requestFormat";
 
 export default function MyRequestsPage() {
@@ -18,12 +21,15 @@ export default function MyRequestsPage() {
   const location = useLocation();
   const planCreated = !!location.state?.planCreated;
 
-  useEffect(() => {
+  const load = () =>
     api
       .get("/api/requests/me")
       .then((d) => setRequests(d.requests))
       .catch(() => setRequests([]));
-  }, []);
+  useEffect(() => {
+    load();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useRefreshHandler(load); // pull down to refresh on a phone
 
   useEffect(() => {
     if (planCreated) toast("Repeating request saved. We'll create each request for you a week before it's due.", "success", 6000);
@@ -56,33 +62,13 @@ export default function MyRequestsPage() {
         {requests === null ? (
           <Skeleton rows={3} />
         ) : filtered.length === 0 ? (
-          <div className="empty-state">
-            <Droplet size={26} className="empty-icon" />
-            <p>No {tab === "active" ? "active" : "past"} requests.</p>
-          </div>
+          <EmptyState art="requests" title={`No ${tab === "active" ? "active" : "past"} requests.`}>
+            {tab === "active" && <Link to="/requests/new" className="btn-primary" style={{ marginTop: 12 }}>Create a request</Link>}
+          </EmptyState>
         ) : (
           <StaggerList key={tab}>
             {filtered.map((r) => (
-            <MLink key={r._id} variants={staggerItem} to={`/requests/${r._id}`} className="list-row" style={{ color: "inherit" }}>
-              <div className="list-row-main">
-                <div className="row-icon" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                  <Droplet size={16} />
-                </div>
-                <div>
-                  <div className="row-title">
-                    {requestHeadline(r)} · {r.area}
-                  </div>
-                  <div className="row-sub">
-                    {r.hospital}
-                    {r.neededBy && r.lifecycle?.scheduled ? ` · needed ${formatNeededBy(r.neededBy)}` : ""}
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <StatusPill status={displayStatus(r)} />
-                <ChevronRight size={16} color="var(--text-soft)" />
-              </div>
-            </MLink>
+              <RequestRow key={r._id} r={r} />
             ))}
           </StaggerList>
         )}
@@ -90,6 +76,34 @@ export default function MyRequestsPage() {
 
       <RepeatingRequests />
     </div>
+  );
+}
+
+// One row. Opening it remembers where its title was, so the request page's
+// heading can glide in from that spot (v2.0).
+function RequestRow({ r }) {
+  const to = `/requests/${r._id}`;
+  return (
+    <MLink variants={staggerItem} to={to} className="list-row" style={{ color: "inherit" }} onClick={(e) => rememberRow(r._id, e.currentTarget.querySelector(".row-title") || e.currentTarget)}>
+      <div className="list-row-main">
+        <div className="row-icon" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+          <Droplet size={16} />
+        </div>
+        <div>
+          <div className="row-title">
+            {requestHeadline(r)} · {r.area}
+          </div>
+          <div className="row-sub">
+            {r.hospital}
+            {r.neededBy && r.lifecycle?.scheduled ? ` · needed ${formatNeededBy(r.neededBy)}` : ""}
+          </div>
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <StatusPill status={displayStatus(r)} />
+        <ChevronRight size={16} color="var(--text-soft)" />
+      </div>
+    </MLink>
   );
 }
 

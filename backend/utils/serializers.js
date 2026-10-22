@@ -8,6 +8,7 @@ const { getNextEligibleDate } = require("./eligibility");
 const { computeTrustTier } = require("./trust");
 const { lifecycleInfo } = require("./lifecycleRules");
 
+const { buildTimeline } = require("./timeline");
 const plain = (doc) => (doc && doc.toObject ? doc.toObject() : doc);
 
 // "Rohan Sharma" -> "Rohan S."  — enough to recognise, not enough to look up.
@@ -125,6 +126,7 @@ function serializeRequestForOwner(requestDoc, now = new Date()) {
     isDemo: !!r.isDemo,
     contactedDonors: (r.contactedDonors || []).map(serializeContactedDonor),
     lifecycle: lifecycleInfo(r, now),
+    timeline: buildTimeline(r),
   };
 }
 

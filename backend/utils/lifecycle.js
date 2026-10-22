@@ -64,7 +64,7 @@ async function escalateRequest(doc, now = new Date()) {
   if (batch.length === 0) return { escalated: true, contacted: 0 };
 
   const entries = await contactDonors(claimed, batch, { escalated: true });
-  await Request.updateOne({ _id: claimed._id }, { $push: { contactedDonors: { $each: entries } } });
+  await Request.updateOne({ _id: claimed._id }, { $push: { contactedDonors: { $each: entries }, timeline: { type: "escalated", at: now, detail: `${entries.length} more donor${entries.length === 1 ? "" : "s"} notified` } } });
   await Request.updateOne({ _id: claimed._id, status: "Searching" }, { $set: { status: "Contacted" } });
   return { escalated: true, contacted: entries.length };
 }
@@ -77,7 +77,7 @@ async function releaseRequest(doc, now = new Date()) {
   if (!rules.isOpenForSearch(doc)) return { released: false };
   const claimed = await Request.findOneAndUpdate(
     { _id: doc._id, released: false },
-    { $set: { released: true, nextEscalationAt: new Date(now.getTime() + rules.escalationMsFor(doc.urgency)) } },
+    { $set: { released: true, nextEscalationAt: new Date(now.getTime() + rules.escalationMsFor(doc.urgency)) }, $push: { timeline: { type: "released", at: now, detail: "Donors are now being contacted" } } },
     { new: true }
   );
   if (!claimed) return { released: false };

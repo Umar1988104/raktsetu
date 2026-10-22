@@ -10,6 +10,8 @@ import { BrandLockup, BridgeLoader } from "../components/Brand";
 import { useConfirm, useToast } from "../components/UiFeedback";
 import { PageTransition } from "../motion/kit";
 import AccountBanners from "../components/AccountBanners";
+import PullToRefresh from "../components/PullToRefresh";
+import { RefreshProvider } from "../context/RefreshContext";
 import { SPRING_SNAPPY } from "../motion/springs";
 
 // One sidebar link. The highlight is a shared element: it slides from the old
@@ -94,6 +96,36 @@ export default function DashboardLayout() {
   const topbarRef = useRef(null);
   const { title, collapsed } = useCollapsingTitle(mainRef, topbarRef, location.pathname);
 
+  // Edge swipe (phones): drag from the left edge to open the menu; swipe left to close it.
+  useEffect(() => {
+    let t = null;
+    const phone = () => window.matchMedia("(max-width: 680px)").matches;
+    const onStart = (e) => {
+      if (!phone() || e.touches.length !== 1) return;
+      const x = e.touches[0].clientX;
+      if (!mobileOpen && x > 24) return;
+      if (document.documentElement.hasAttribute("data-sheet")) return;
+      t = { x, y: e.touches[0].clientY };
+    };
+    const onMove = (e) => {
+      if (!t) return;
+      const dx = e.touches[0].clientX - t.x;
+      const dy = Math.abs(e.touches[0].clientY - t.y);
+      if (dy > 50) { t = null; return; }
+      if (!mobileOpen && dx > 70) { setMobileOpen(true); t = null; }
+      else if (mobileOpen && dx < -70) { setMobileOpen(false); t = null; }
+    };
+    const onEnd = () => { t = null; };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchmove", onMove, { passive: true });
+    window.addEventListener("touchend", onEnd);
+    return () => {
+      window.removeEventListener("touchstart", onStart);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onEnd);
+    };
+  }, [mobileOpen]);
+
   // Close the mobile sidebar automatically whenever the route changes.
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
@@ -126,7 +158,9 @@ export default function DashboardLayout() {
     .toUpperCase();
 
   return (
+    <RefreshProvider>
     <div className="app-shell">
+      <PullToRefresh />
       <div className={`scrim ${mobileOpen ? "open" : ""}`} onClick={() => setMobileOpen(false)} aria-hidden="true" />
 
       <aside className={`sidebar ${mobileOpen ? "open" : ""}`} aria-label={t("Main navigation")}>
@@ -234,5 +268,6 @@ export default function DashboardLayout() {
         </main>
       </div>
     </div>
+    </RefreshProvider>
   );
 }

@@ -27,7 +27,7 @@ async function contactDonors(request, donors, { escalated = false } = {}) {
       });
     }
 
-    notified.push({ donor: d._id, status: "Pending" });
+    notified.push({ donor: d._id, status: "Pending", notifiedAt: new Date() });
   }
   return notified;
 }
