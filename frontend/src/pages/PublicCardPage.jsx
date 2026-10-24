@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { BadgeCheck, ShieldAlert, ShieldCheck } from "lucide-react";
 import { api } from "../api";
-import { BrandLockup, BridgeLoader } from "../components/Brand";
+import { BrandLink, BridgeLoader } from "../components/Brand";
 import { TIER_LABEL } from "../components/card/cardUtils";
 
 // What the QR code opens. Anyone can see it, so it only ever shows what the
@@ -33,7 +33,7 @@ export default function PublicCardPage() {
     <div className="auth-shell">
       <div className="auth-card" style={{ textAlign: "center" }}>
         <div className="auth-brand" style={{ justifyContent: "center" }}>
-          <BrandLockup />
+          <BrandLink className="auth-brand-link" />
         </div>
 
         {loading && <BridgeLoader />}

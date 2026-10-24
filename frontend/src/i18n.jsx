@@ -17,6 +17,8 @@ const HI = {
   "Privacy Policy": "गोपनीयता नीति",
   "Log in": "लॉग इन",
   "Get started": "शुरू करें",
+  "Open dashboard": "डैशबोर्ड खोलें",
+  "Choose a view": "एक दृश्य चुनें",
   "Sign up": "साइन अप",
 
   // Landing

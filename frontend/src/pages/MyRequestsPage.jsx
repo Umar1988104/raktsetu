@@ -48,6 +48,8 @@ export default function MyRequestsPage() {
 
       <div style={{ marginBottom: 16 }}>
         <SegmentedControl
+          variant="vials"
+          caption="Choose a view"
           label="Request list"
           value={tab}
           onChange={setTab}

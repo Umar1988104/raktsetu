@@ -8,7 +8,7 @@ export async function makeQr(cardId, width = 360) {
     margin: 1,
     width,
     errorCorrectionLevel: "M",
-    color: { dark: "#0B1F2A", light: "#FFFFFF" },
+    color: { dark: "#12141A", light: "#FFFFFF" },
   });
 }
 

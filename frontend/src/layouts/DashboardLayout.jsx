@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useLang } from "../i18n";
 import LanguageToggle from "../components/LanguageToggle";
 import AppearanceButton from "../components/AppearanceSheet";
-import { BrandLockup, BridgeLoader } from "../components/Brand";
+import { BrandLink, BridgeLoader } from "../components/Brand";
 import { useConfirm, useToast } from "../components/UiFeedback";
 import { PageTransition } from "../motion/kit";
 import AccountBanners from "../components/AccountBanners";
@@ -164,9 +164,7 @@ export default function DashboardLayout() {
       <div className={`scrim ${mobileOpen ? "open" : ""}`} onClick={() => setMobileOpen(false)} aria-hidden="true" />
 
       <aside className={`sidebar ${mobileOpen ? "open" : ""}`} aria-label={t("Main navigation")}>
-        <div className="sidebar-brand">
-          <BrandLockup />
-        </div>
+        <BrandLink />
 
         <nav className="sidebar-nav">
           <NavItem to="/dashboard" icon={<LayoutDashboard size={18} />}>

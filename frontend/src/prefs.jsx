@@ -34,7 +34,7 @@ export function applyPrefs(prefs, root = document.documentElement) {
 
   // Colour of the phone's status bar / browser chrome
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", dark ? "#0B1217" : "#F2F5F7");
+  if (meta) meta.setAttribute("content", dark ? "#07090E" : "#E4E9F3");
 }
 
 const PrefsContext = createContext({

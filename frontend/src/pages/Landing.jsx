@@ -12,9 +12,10 @@ import {
 } from "lucide-react";
 import { api } from "../api";
 import { useLang } from "../i18n";
+import { useAuth } from "../context/AuthContext";
 import LanguageToggle from "../components/LanguageToggle";
 import AppearanceButton from "../components/AppearanceSheet";
-import { BrandLockup, BridgeDivider, HeroBridge } from "../components/Brand";
+import { BrandLink, BridgeDivider, HeroBridge } from "../components/Brand";
 import SegmentedControl from "../components/SegmentedControl";
 import FaqList from "../components/FaqList";
 
@@ -51,6 +52,8 @@ const PERSONAS = {
 
 export default function Landing() {
   const { t, lang } = useLang();
+  const { firebaseUser, profile } = useAuth();
+  const signedIn = !!(firebaseUser && profile);
   const [stats, setStats] = useState(null);
   const [persona, setPersona] = useState("families");
 
@@ -61,9 +64,7 @@ export default function Landing() {
   return (
     <div>
       <nav className="landing-nav">
-        <div className="sidebar-brand" style={{ padding: 0 }}>
-          <BrandLockup />
-        </div>
+        <BrandLink style={{ padding: 0 }} />
         <div className="nav-links">
           <Link to="/emergency" className="nav-emergency hide-mobile">
             {t("Emergency — Request Now")}
@@ -72,12 +73,20 @@ export default function Landing() {
             <LanguageToggle />
           </div>
           <AppearanceButton />
-          <Link to="/login" className="btn-outline">
-            {t("Log in")}
-          </Link>
-          <Link to="/signup" className="btn-primary">
-            {t("Get started")}
-          </Link>
+          {signedIn ? (
+            <Link to="/dashboard" className="btn-primary">
+              {t("Open dashboard")}
+            </Link>
+          ) : (
+            <>
+              <Link to="/login" className="btn-outline">
+                {t("Log in")}
+              </Link>
+              <Link to="/signup" className="btn-primary">
+                {t("Get started")}
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -101,12 +110,20 @@ export default function Landing() {
             )}
           </p>
           <div className="cta-row">
-            <Link to="/signup" className="btn-primary">
-              {t("Get started")}
-            </Link>
-            <Link to="/login" className="btn-outline">
-              {t("Log in")}
-            </Link>
+            {signedIn ? (
+              <Link to="/dashboard" className="btn-primary">
+                {t("Open dashboard")}
+              </Link>
+            ) : (
+              <>
+                <Link to="/signup" className="btn-primary">
+                  {t("Get started")}
+                </Link>
+                <Link to="/login" className="btn-outline">
+                  {t("Log in")}
+                </Link>
+              </>
+            )}
           </div>
           <Link to="/emergency" className="hero-link">
             {t("Need blood right now? Request without an account →")}
@@ -183,6 +200,8 @@ export default function Landing() {
           <p className="section-kicker">{lang === "hi" ? "किसके लिए" : "Who it's for"}</p>
           <h2>{lang === "hi" ? "श्रृंखला की हर कड़ी के लिए।" : "Built for everyone in the chain."}</h2>
           <SegmentedControl
+            variant="vials"
+            caption={lang === "hi" ? "एक दृश्य चुनें" : "Choose a view"}
             label={lang === "hi" ? "कौन?" : "Who?"}
             value={persona}
             onChange={setPersona}

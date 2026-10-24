@@ -75,7 +75,7 @@ export default function MatchMap({ request, matches, requestIcon }) {
         <MapContainer center={center} zoom={11} style={{ height: "100%", width: "100%" }}>
           <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <FitCircle center={center} radiusM={radiusKm * 1000} />
-          <Circle center={center} radius={radiusKm * 1000} pathOptions={{ color: "#0F766E", weight: 2, dashArray: "6 6", fillColor: "#0F766E", fillOpacity: 0.07 }} />
+          <Circle center={center} radius={radiusKm * 1000} pathOptions={{ color: "#0A84FF", weight: 2, dashArray: "6 6", fillColor: "#0A84FF", fillOpacity: 0.07 }} />
           <Marker position={center} icon={requestIcon}>
             <Popup>Your request location</Popup>
           </Marker>

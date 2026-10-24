@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { BrandLockup } from "../components/Brand";
+import { BrandLink } from "../components/Brand";
 import EmptyState from "../components/EmptyState";
 import { useAuth } from "../context/AuthContext";
 
@@ -11,7 +11,7 @@ export default function NotFoundPage() {
     <div className="auth-shell">
       <div className="auth-card" style={{ textAlign: "center" }}>
         <div className="auth-brand" style={{ justifyContent: "center" }}>
-          <BrandLockup />
+          <BrandLink className="auth-brand-link" />
         </div>
         <EmptyState art="broken" title="This bridge doesn't lead anywhere">
           <p className="status">We couldn't find that page. It may have moved, or the link may be mistyped.</p>

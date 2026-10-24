@@ -2,6 +2,18 @@
 // invented dates. Edit freely as you ship more.
 export const CHANGELOG = [
   {
+    version: "v2.0.1",
+    date: "2026-10-24",
+    title: "A new look",
+    items: [
+      "A brand-new look: frosted glass panels over a softly lit backdrop, with red kept for emergencies",
+      "New blood-vial tabs: pick a view and its test tube fills with blood",
+      "A live heartbeat panel on your dashboard, and a cursor-following shine on glass cards",
+      "Clicking the RaktSetu logo now always takes you to the home page — from the dashboard, log in, sign up and more",
+      "When you are logged in, the home page shows “Open dashboard” so you can jump straight back",
+    ],
+  },
+  {
     version: "v2.0",
     date: "2026-10-22",
     title: "Live experience & visuals",

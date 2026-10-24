@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useLang } from "../i18n";
 import LanguageToggle from "../components/LanguageToggle";
 import AppearanceButton from "../components/AppearanceSheet";
-import { BrandLockup } from "../components/Brand";
+import { BrandLink } from "../components/Brand";
 
 export default function Login() {
   const { login, firebaseUser, profile, loading } = useAuth();
@@ -36,7 +36,7 @@ export default function Login() {
     <div className="auth-shell">
       <div className="auth-card">
         <div className="auth-brand">
-          <BrandLockup />
+          <BrandLink className="auth-brand-link" />
           <span style={{ flex: 1 }} />
           <AppearanceButton />
         </div>

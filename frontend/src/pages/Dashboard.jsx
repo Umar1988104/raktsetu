@@ -18,7 +18,7 @@ import DemoNotice from "../components/DemoNotice";
 import { CHANGELOG } from "../data/changelog";
 import { TIPS } from "../data/tips";
 
-const CHART_COLORS = ["#0F766E", "#F59E0B", "#2F6FDE", "#8B5CF6", "#16A34A", "#0EA5B7", "#D946EF", "#64748B"];
+const CHART_COLORS = ["#0A84FF", "#FF3B30", "#FFCC00", "#34C759", "#FF9F0A", "#64D2FF", "#8E8E93", "#30B0C7"];
 const TIER_CLASS = { New: "pill-expired", Trusted: "pill-confirmed", Pillar: "pill-verified" };
 
 export default function Dashboard() {
@@ -266,6 +266,14 @@ function LiveStrip({ stats, t }) {
           <AnimatedNumber value={stats.availableDonors ?? 0} />
         </strong>
         {t("donors available now")}
+      </span>
+      <span className="live-art" aria-hidden="true">
+        <svg viewBox="0 0 400 96" preserveAspectRatio="none">
+          <path className="hb-line" d="M0 56h50l10-26 14 52 12-40 8 14h106M200 56h50l10-26 14 52 12-40 8 14h106" />
+        </svg>
+        <i className="donor-dot" style={{ left: "18%", top: "16%" }} />
+        <i className="donor-dot" style={{ left: "74%", top: "22%", animationDelay: "0.8s" }} />
+        <i className="donor-dot" style={{ left: "56%", top: "78%" }} />
       </span>
       <DemoNotice show={stats.demoDataIncluded} />
     </div>

@@ -29,18 +29,18 @@ function paintBackground(ctx, x, y, kind, tier) {
   let fill;
   if (kind === "partner") {
     fill = ctx.createLinearGradient(x, y, x + W, y + H);
-    fill.addColorStop(0, "#0B4A6B");
-    fill.addColorStop(1, "#0F766E");
+    fill.addColorStop(0, "#0A3D91");
+    fill.addColorStop(1, "#0A84FF");
   } else if (tier === "Pillar") {
     fill = ctx.createLinearGradient(x, y, x + W, y + H);
-    ["#1b2a32", "#3d4e5a", "#1b2a32", "#5b6d79", "#26363f"].forEach((c, i, a) => fill.addColorStop(i / (a.length - 1), c));
+    ["#0B0D12", "#2E3342", "#0B0D12", "#4A5166", "#161923"].forEach((c, i, a) => fill.addColorStop(i / (a.length - 1), c));
   } else if (tier === "Trusted") {
     fill = ctx.createLinearGradient(x, y, x + W, y + H);
-    fill.addColorStop(0, "#0F766E");
-    fill.addColorStop(0.6, "#0E4F6B");
-    fill.addColorStop(1, "#1B3A8A");
+    fill.addColorStop(0, "#FF5A4F");
+    fill.addColorStop(0.6, "#D4281D");
+    fill.addColorStop(1, "#8E0F08");
   } else {
-    fill = "#2B5C61"; // matte
+    fill = "#2A2F3A"; // matte
   }
   roundRect(ctx, x, y, W, H, 44);
   ctx.fillStyle = fill;
@@ -124,9 +124,9 @@ function drawBack(ctx, x, y, card) {
         ctx.bezierCurveTo(cx + 4, cy - 22, cx + 16, cy - 10, cx + 16, cy - 1);
         ctx.arc(cx, cy - 1, 16, 0, Math.PI, false);
         ctx.bezierCurveTo(cx - 16, cy - 10, cx - 4, cy - 22, cx, cy - 30);
-        ctx.fillStyle = "#0F766E";
+        ctx.fillStyle = "#0A84FF";
         ctx.fill();
-        text(ctx, shortDate(stamps[i].date), cx, cy + 28, { size: 14, weight: 700, align: "center", color: "#0B1F2A" });
+        text(ctx, shortDate(stamps[i].date), cx, cy + 28, { size: 14, weight: 700, align: "center", color: "#12141A" });
       } else {
         ctx.setLineDash([8, 8]);
         ctx.strokeStyle = "rgba(255,255,255,0.45)";
@@ -151,7 +151,7 @@ export async function downloadCardImage(card, qrDataUrl) {
   canvas.width = W + pad * 2;
   canvas.height = H * 2 + pad * 3;
   const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#F2F5F7";
+  ctx.fillStyle = "#E4E9F3";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawFront(ctx, pad, pad, card, qrImg, photoImg);
   drawBack(ctx, pad, pad * 2 + H, card);

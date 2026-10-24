@@ -38,7 +38,7 @@ export default function RequestHeatMap() {
               <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <FitCells cells={data.cells} />
               {data.cells.map((c) => (
-                <CircleMarker key={`${c.lat},${c.lng}`} center={[c.lat, c.lng]} radius={8 + Math.sqrt(c.count) * 4} pathOptions={{ color: "#0F766E", weight: 2, fillColor: "#0F766E", fillOpacity: 0.3 }}>
+                <CircleMarker key={`${c.lat},${c.lng}`} center={[c.lat, c.lng]} radius={8 + Math.sqrt(c.count) * 4} pathOptions={{ color: "#FF3B30", weight: 2, fillColor: "#FF3B30", fillOpacity: 0.3 }}>
                   <Popup>{c.count} requests in this ~{data.cellKm} km area (last {data.windowDays} days)</Popup>
                 </CircleMarker>
               ))}
