@@ -1,4 +1,5 @@
 const express = require("express");
+const { creditReferralsForDonors } = require("../utils/referral");
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const User = require("../models/User");
@@ -206,6 +207,7 @@ router.patch("/:id/status", verifyToken, async (req, res) => {
           { _id: { $in: acceptedDonorIds } },
           { $push: { donationHistory: { date: new Date(), requestId: request._id } } }
         );
+        await creditReferralsForDonors(acceptedDonorIds); // v2.1: referral trust bonus, once per invitee
       }
     }
 

@@ -195,6 +195,49 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <div className="card">
+          <h3>Invite links</h3>
+          <p>
+            A donor can share an invite link that contains a random code (not your name, phone or
+            email). If someone signs up as a donor through it, we store a hidden link between the
+            two accounts. When the invited person&apos;s first donation is recorded, the inviter&apos;s
+            trust score goes up by 10 points (at most 20 in total). You can see only two numbers —
+            how many people signed up and how many donated — never who they are. Nobody is told
+            who invited them. You can show the donated count on your public card, but it is off
+            unless you switch it on.
+          </p>
+        </div>
+
+        <div className="card">
+          <h3>Camp RSVPs</h3>
+          <p>
+            When you tap &ldquo;I&apos;ll come&rdquo; on a donation camp, we store which camp and which account,
+            and we email you one reminder the day before. The hospital hosting the camp sees only
+            how many people said they&apos;ll come — never who. You can cancel any time, and your
+            RSVP is deleted if the camp is cancelled.
+          </p>
+        </div>
+
+        <div className="card">
+          <h3>The blood stock board</h3>
+          <p>
+            Approved hospital partners can type in how many units of each blood group they hold. The
+            numbers are entered by hand, so they can be out of date; every board shows when it was
+            last updated and asks you to call the blood bank before travelling. The board shows the
+            hospital&apos;s name, address and location, and no personal data about donors or patients.
+          </p>
+        </div>
+
+        <div className="card">
+          <h3>The help chat</h3>
+          <p>
+            The help chat is not artificial intelligence. It picks a pre-written answer from a fixed
+            list. What you type stays in your browser: it is not sent to our server, stored, or
+            shared. It can give general information only — always check medical questions with a
+            blood bank or doctor.
+          </p>
+        </div>
+
+        <div className="card">
           <h3>Display settings stored on your device</h3>
           <p>
             Your language, theme (light / dark), contrast and text-size choices are saved in your

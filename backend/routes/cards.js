@@ -12,8 +12,8 @@ const { PHONE_REGEX } = require("../models/User");
 
 const router = express.Router();
 
-const USER_FIELDS = "name phone email familyMembers photo address alternatePhone role hospitalName partnerVerified isGuest createdAt";
-const SHOW_KEYS = ["name", "bloodGroup", "tier", "verified", "memberSince", "eligibleToday"];
+const USER_FIELDS = "name phone email familyMembers photo address alternatePhone role hospitalName partnerVerified isGuest createdAt referralCount";
+const SHOW_KEYS = ["name", "bloodGroup", "tier", "verified", "memberSince", "eligibleToday", "referrals"];
 
 // Public lookups are rate limited per IP: a general cap, plus a much lower cap
 // on lookups that miss (someone guessing IDs). In-memory; resets on restart.
@@ -211,7 +211,7 @@ router.get("/lookup/:cardId", verifyToken, async (req, res) => {
     if (!card || card.hidden) return res.status(404).json({ error: "Card not found" });
 
     const donorQuery = { user: card.owner, familyMemberId: card.familyMemberId || null };
-    const donor = await Donor.findOne(donorQuery).populate("user", "name phone email familyMembers photo address alternatePhone");
+    const donor = await Donor.findOne(donorQuery).populate("user", "name phone email familyMembers photo address alternatePhone referralCount");
     if (!donor) return res.status(404).json({ error: "This card's owner has no donor profile to verify" });
     res.json({ donors: [serializeDonor(donor, "hospital")] });
   } catch (err) {

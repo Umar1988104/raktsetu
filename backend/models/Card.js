@@ -20,6 +20,7 @@ const cardSchema = new mongoose.Schema(
       verified: { type: Boolean, default: true },
       memberSince: { type: Boolean, default: false },
       eligibleToday: { type: Boolean, default: false }, // yes/no only
+      referrals: { type: Boolean, default: false }, // v2.1: "invited N donors" — off unless the owner turns it on
     },
 
     // Opt-in. Printed on the BACK of the owner's own card image only —

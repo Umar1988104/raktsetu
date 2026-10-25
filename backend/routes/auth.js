@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Donor = require("../models/Donor");
 const verifyToken = require("../middleware/verifyToken");
 const { isAdminUid } = require("../middleware/requireAdmin");
+const { resolveReferrer, ensureReferralCode } = require("../utils/referral");
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ const MAX_PHOTO_CHARS = 130000;
 // Creates the RaktSetu profile (name, phone, role) for this Firebase user.
 router.post("/register", verifyToken, async (req, res) => {
   try {
-    const { name, phone, role, hospitalName } = req.body;
+    const { name, phone, role, hospitalName, ref } = req.body;
 
     if (!name || !phone || !["donor", "seeker", "hospital"].includes(role)) {
       return res.status(400).json({ error: "name, phone and a valid role ('donor', 'seeker' or 'hospital') are required" });
@@ -29,6 +30,9 @@ router.post("/register", verifyToken, async (req, res) => {
       return res.status(409).json({ error: "Profile already exists for this account", user: existing });
     }
 
+    // v2.1: an invite code from /signup?ref=. Bad or unusable codes are ignored.
+    const referredBy = role === "donor" && ref ? await resolveReferrer(ref, phone) : null;
+
     const user = await User.create({
       firebaseUid: req.user.uid,
       email: req.user.email,
@@ -36,9 +40,14 @@ router.post("/register", verifyToken, async (req, res) => {
       phone,
       role,
       hospitalName: role === "hospital" ? hospitalName : undefined,
+      referredBy: referredBy || null,
     });
 
-    res.status(201).json({ user });
+    // Never tell the new user which account invited them.
+    const out = user.toObject ? user.toObject() : { ...user };
+    delete out.referredBy;
+    delete out.referralCredited;
+    res.status(201).json({ user: out });
   } catch (err) {
     if (err.name === "ValidationError") return res.status(400).json({ error: err.message });
     console.error(err);
@@ -116,6 +125,22 @@ router.get("/me", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch profile" });
+  }
+});
+
+// Referral link info (v2.1): the donor's own invite code plus two counts. Never
+// any names or phone numbers of the people invited.
+router.get("/me/referral", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ error: "Profile not found" });
+    if (user.role !== "donor" || user.isGuest) return res.status(403).json({ error: "Invite links are for donor accounts" });
+    const code = await ensureReferralCode(user);
+    const signedUp = await User.countDocuments({ referredBy: user._id });
+    res.json({ code, signedUp, donated: user.referralCount || 0 });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load your invite link" });
   }
 });
 

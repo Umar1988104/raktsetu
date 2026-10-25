@@ -4,8 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import { initGlassSpotlight } from './glassSpotlight.js'
+import { captureReferral } from './utils/referralLink.js'
 
 initGlassSpotlight()
+captureReferral()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

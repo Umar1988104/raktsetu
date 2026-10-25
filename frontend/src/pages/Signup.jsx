@@ -5,6 +5,7 @@ import { useLang } from "../i18n";
 import LanguageToggle from "../components/LanguageToggle";
 import AppearanceButton from "../components/AppearanceSheet";
 import { BrandLink } from "../components/Brand";
+import { getPendingReferral } from "../utils/referralLink";
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -41,6 +42,11 @@ export default function Signup() {
           <h2 style={{ margin: 0 }}>{t("Create your RaktSetu account")}</h2>
           <LanguageToggle />
         </div>
+        {getPendingReferral() && (
+          <p className="invite-note" role="note">
+            {t("A RaktSetu donor invited you. If you sign up as a donor, they get a thank-you when you make your first donation.")}
+          </p>
+        )}
         <form onSubmit={handleSubmit}>
           <label>{t("Email")}</label>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />

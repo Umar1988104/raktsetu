@@ -7,6 +7,7 @@ import { UiProvider } from "./components/UiFeedback";
 import MotionRoot from "./motion/MotionRoot";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MaybeLayout from "./components/MaybeLayout";
+import HelpChat from "./components/HelpChat";
 import { BridgeLoader } from "./components/Brand";
 
 // Route-level code splitting: each screen is its own small download, fetched
@@ -30,6 +31,7 @@ const CampsPage = lazy(() => import("./pages/CampsPage"));
 const TrackPage = lazy(() => import("./pages/TrackPage"));
 const CertificatePage = lazy(() => import("./pages/CertificatePage"));
 const UpdatesPage = lazy(() => import("./pages/UpdatesPage"));
+const StockPage = lazy(() => import("./pages/StockPage"));
 const ImpactPage = lazy(() => import("./pages/ImpactPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const MyCardPage = lazy(() => import("./pages/MyCardPage"));
@@ -52,6 +54,7 @@ export default function App() {
           <Route element={<MaybeLayout />}>
             <Route path="/camps" element={<CampsPage />} />
             <Route path="/impact" element={<ImpactPage />} />
+            <Route path="/stock" element={<StockPage />} />
           </Route>
           <Route path="/track/:token" element={<TrackPage />} />
           <Route path="/card/:id" element={<PublicCardPage />} />
@@ -96,6 +99,7 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
+      <HelpChat />
     </AuthProvider>
     </UiProvider>
     </MotionRoot>

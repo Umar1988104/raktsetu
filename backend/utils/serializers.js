@@ -195,6 +195,7 @@ function serializeOwnCard(view) {
         verified: c.show?.verified !== false,
         memberSince: !!c.show?.memberSince,
         eligibleToday: !!c.show?.eligibleToday,
+        referrals: !!c.show?.referrals,
       },
     },
     regeneratedAt: c.regeneratedAt || null,
@@ -212,6 +213,7 @@ function serializeOwnCard(view) {
     stamps: (view.stamps || []).map((d) => ({ date: d })),
     nextEligibleDate: view.nextEligibleDate,
     eligibleToday: view.eligibleToday,
+    referralsDonated: view.referralsDonated || 0,
     photo: view.photo,
     emergencyContact: {
       enabled: !!c.emergencyContact?.enabled,
@@ -237,6 +239,7 @@ function serializePublicCard(view) {
   if (show.verified !== false) out.verified = !!view.verified;
   if (show.memberSince && view.memberSince) out.memberSinceYear = new Date(view.memberSince).getFullYear();
   if (show.eligibleToday && view.eligibleToday !== null) out.eligibleToday = !!view.eligibleToday;
+  if (show.referrals && view.referralsDonated > 0) out.referralsDonated = view.referralsDonated; // a bare count, opt-in
   return out;
 }
 

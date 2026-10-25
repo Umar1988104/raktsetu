@@ -2,6 +2,26 @@
 // invented dates. Edit freely as you ship more.
 export const CHANGELOG = [
   {
+    version: "v2.1b",
+    date: "2026-10-25",
+    title: "Camp RSVPs and blood stock",
+    items: [
+      "Donation camps: tap “I’ll come” and get an email reminder the day before; hospitals see how many are coming, never who",
+      "New Blood stock page: see what hospital blood banks hold, always with when it was updated and a “call to confirm” notice",
+      "Approved hospitals can post and update their own stock board",
+    ],
+  },
+  {
+    version: "v2.1a",
+    date: "2026-10-25",
+    title: "Help chat and invite links",
+    items: [
+      "New Help button: ask a question and get a pre-written answer, in English or Hindi (not AI, and your questions stay on your device)",
+      "Invite friends: share your link; when a friend you invited donates, your trust score grows",
+      "Your card can optionally show how many invited friends have donated (off unless you turn it on)",
+    ],
+  },
+  {
     version: "v2.0.1",
     date: "2026-10-24",
     title: "A new look",

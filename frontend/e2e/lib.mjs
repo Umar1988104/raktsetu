@@ -65,6 +65,7 @@ export function fixtures(role = "donor", opts = {}) {
   ];
   return {
     "GET /api/auth/me": { user, donors: [donor], isAdmin: !!opts.admin },
+    "GET /api/auth/me/referral": { code: "K7M2QX9A", signedUp: 3, donated: 1 },
     "GET /api/stats": { totalDonors: 128, availableDonors: 42, fulfilledRequests: 17, activeRequests: 5, criticalOpen: 2, byBloodGroup: { "A+": 20, "B+": 25, "O+": 40 }, hospitalPartners: { count: 2, names: ["City Hospital"] }, demoDataIncluded: false },
     "GET /api/camps": { camps: [] },
     "GET /api/camps/mine": { camps: [] },

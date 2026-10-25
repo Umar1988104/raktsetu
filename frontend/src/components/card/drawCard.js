@@ -89,7 +89,8 @@ function drawFront(ctx, x, y, card, qrImg, photoImg) {
   }
 
   text(ctx, card.cardId, x + 56, y + H - 96, { size: 40, weight: 700 });
-  text(ctx, partner ? "Hospital partner" : `Member since ${memberSinceLabel(card.memberSince)}`, x + 56, y + H - 52, { size: 26, alpha: 0.85 });
+  const invited = !partner && card.referralsDonated > 0 ? ` · Invited ${card.referralsDonated} donor${card.referralsDonated > 1 ? "s" : ""}` : "";
+  text(ctx, partner ? "Hospital partner" : `Member since ${memberSinceLabel(card.memberSince)}${invited}`, x + 56, y + H - 52, { size: 26, alpha: 0.85 });
   if (qrImg) {
     ctx.save();
     roundRect(ctx, x + W - 56 - 170, y + H - 56 - 170, 170, 170, 16);

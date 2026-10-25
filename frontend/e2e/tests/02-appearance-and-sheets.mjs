@@ -1,5 +1,8 @@
 // Appearance settings, bottom sheets, logout confirmation.
 export default async function ({ newPage, fixtures, ok, sleep, BASE }) {
+  // Wait (up to 4s) for a sheet's exit animation instead of guessing a fixed delay:
+  // slow machines (and the software renderer used for these checks) take longer.
+  const sheetGone = (pg) => pg.waitForFunction(() => !document.querySelector(".sheet"), { timeout: 4000 }).then(() => true, () => false);
   const attr = (p, a) => p.evaluate((x) => document.documentElement.getAttribute(x), a);
   let p = await newPage({ fx: fixtures("seeker") });
   await p.goto(`${BASE}/dashboard`, { waitUntil: "networkidle0" });
@@ -15,7 +18,7 @@ export default async function ({ newPage, fixtures, ok, sleep, BASE }) {
   await p.click("button[role=switch]");
   ok("high contrast applied", (await attr(p, "data-contrast")) === "high");
   await p.keyboard.press("Escape");
-  await sleep(800);
+  await sheetGone(p);
   ok("Escape closes the sheet and unlocks the page", !(await p.$(".sheet")) && (await attr(p, "data-sheet")) === null);
   await p.reload({ waitUntil: "networkidle0" });
   await sleep(500);
@@ -29,7 +32,7 @@ export default async function ({ newPage, fixtures, ok, sleep, BASE }) {
   await sleep(800);
   ok("logout asks first, with Cancel focused", (await p.$eval(".action-sheet h3", (e) => e.textContent)).includes("Log out") && (await p.evaluate(() => document.activeElement?.textContent?.includes("Stay signed in"))));
   await p.click(".action-sheet button.ghost");
-  await sleep(800);
+  await sheetGone(p);
   ok("cancel keeps you signed in", !(await p.$(".sheet")) && p.url().includes("/dashboard"));
   await p.click(".sidebar-footer button");
   await sleep(700);

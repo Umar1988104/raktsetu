@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { api } from "../api";
+import { getPendingReferral, clearPendingReferral } from "../utils/referralLink";
 
 const AuthContext = createContext(null);
 
@@ -122,7 +123,9 @@ export function AuthProvider({ children }) {
 
   // Call after signup once the user fills in name/phone/role.
   async function completeProfile({ name, phone, role, hospitalName }) {
-    const data = await api.post("/api/auth/register", { name, phone, role, hospitalName });
+    const ref = role === "donor" ? getPendingReferral() : null;
+    const data = await api.post("/api/auth/register", { name, phone, role, hospitalName, ref: ref || undefined });
+    clearPendingReferral();
     await refreshProfile();
     return data;
   }

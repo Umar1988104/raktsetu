@@ -16,7 +16,7 @@ const router = express.Router();
 
 // Fields we need from the account to work out names and trust tier. They are
 // only ever read here — serializeDonor decides what actually leaves the server.
-const USER_FIELDS = "name phone email familyMembers photo address alternatePhone";
+const USER_FIELDS = "name phone email familyMembers photo address alternatePhone referralCount";
 const isId = (id) => mongoose.isValidObjectId(id);
 const getCurrentUser = (req) => User.findOne({ firebaseUid: req.user.uid });
 

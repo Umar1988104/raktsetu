@@ -1,5 +1,7 @@
 // Trust tier for a donor profile, computed from real signals rather than a
 // raw gameable number. Shown as a badge: New / Trusted / Pillar.
+const { referralTrustBonus } = require("./referral");
+
 function computeTrustScore(donor, user) {
   let score = 0;
   if (donor.verified) score += 40; // hospital-verified — the strongest signal
@@ -7,6 +9,7 @@ function computeTrustScore(donor, user) {
   if (user?.photo) score += 10;
   if (user?.address) score += 10;
   if (user?.alternatePhone) score += 10;
+  score += referralTrustBonus(user?.referralCount); // v2.1: invited donors who donated (max +20)
   return score;
 }
 

@@ -1483,3 +1483,93 @@ button[aria-checked="true"] .vial-fill::before { animation: vial-wave 2.2s ease-
   body::before { display: none; }
   .card, .stat-card, .live-strip, .sidebar, .topbar, .sheet { background: #fff !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; }
 }
+
+/* =====================================================================
+   18. HELP CHAT (v2.1) — floating button + glass panel (sheet on phones)
+   ===================================================================== */
+.chat-fab {
+  position: fixed; right: 18px; bottom: calc(18px + var(--safe-bottom, 0px)); z-index: 60;
+  display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 10px 18px;
+  box-shadow: var(--glass-edge), 0 12px 28px rgba(18, 20, 26, 0.3);
+}
+.chat-panel { display: flex; flex-direction: column; min-height: 0; }
+.chat-float {
+  position: fixed; right: 18px; bottom: calc(78px + var(--safe-bottom, 0px)); z-index: 60;
+  width: min(400px, calc(100vw - 36px)); height: min(560px, calc(100dvh - 120px));
+  border-radius: var(--r-xl); background: var(--gs); border: 1px solid var(--gb);
+  -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: var(--shadow-lg), var(--glass-edge); overflow: hidden;
+}
+:root[data-contrast="high"] .chat-float { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface); }
+.chat-panel.in-sheet { height: min(70dvh, 560px); }
+.chat-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 8px; }
+.chat-head h2 { margin: 0; font-size: 1.15rem; }
+.chat-log { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 14px; display: flex; flex-direction: column; gap: 10px; overscroll-behavior: contain; }
+.chat-msg { max-width: 92%; border-radius: 18px; padding: 10px 14px; font-size: 0.92rem; line-height: 1.45; }
+.chat-msg p { margin: 0; }
+.chat-msg.bot { align-self: flex-start; background: var(--g); border: 1px solid var(--gb); border-bottom-left-radius: 6px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.chat-msg.me { align-self: flex-end; background: var(--btn); color: var(--on-btn); border-bottom-right-radius: 6px; }
+.chat-medical-extra { color: var(--text-soft); font-size: 0.86rem; }
+.chat-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chat-chip {
+  background: var(--sel); color: var(--text); border: 1px solid var(--border-strong); box-shadow: none;
+  min-height: 36px; padding: 6px 12px; font-size: 0.82rem; font-weight: 600; text-align: left; border-radius: 14px; white-space: normal;
+}
+@media (hover: hover) { .chat-chip:hover:not(:disabled) { background: var(--brand-soft); color: var(--brand-text); } }
+.chat-form { display: flex; gap: 8px; padding: 10px 14px 4px; }
+.chat-form input { flex: 1; min-width: 0; background: var(--g); border: 1.5px solid var(--border-strong); border-radius: var(--r-full); padding: 10px 16px; min-height: 46px; }
+.chat-form button { width: 46px; height: 46px; padding: 0; flex: none; display: inline-flex; align-items: center; justify-content: center; }
+.chat-note { margin: 0; padding: 4px 16px 12px; font-size: 0.72rem; color: var(--text-soft); text-align: center; }
+@media (max-width: 680px) { .chat-fab span { display: none; } .chat-fab { padding: 0; width: 52px; height: 52px; justify-content: center; } }
+@media (prefers-reduced-motion: no-preference) { .chat-msg { animation: chat-in 0.28s var(--ease-spring) both; } }
+@keyframes chat-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media print { .chat-root { display: none !important; } }
+
+/* =====================================================================
+   19. REFERRALS (v2.1)
+   ===================================================================== */
+.invite-sub { color: var(--text-soft); font-size: 0.88rem; margin: 6px 0 14px; max-width: 60ch; }
+.invite-link input { width: 100%; font-size: 0.9rem; }
+.invite-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.invite-actions button { display: inline-flex; align-items: center; gap: 8px; }
+.invite-counts { display: flex; gap: 12px; margin: 16px 0 0; }
+.invite-counts div { flex: 1; background: var(--g); border: 1px solid var(--gb); border-radius: var(--r-lg); padding: 10px 14px; }
+.invite-counts dt { font-size: 0.78rem; color: var(--text-soft); }
+.invite-counts dd { margin: 2px 0 0; font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; }
+.invite-note { background: var(--brand-soft); color: var(--text); border: 1px solid var(--gb); border-radius: var(--r-lg); padding: 10px 14px; font-size: 0.88rem; margin: 0 0 var(--sp-3); }
+
+/* =====================================================================
+   20. CAMP RSVP + BLOOD STOCK BOARD (v2.1)
+   ===================================================================== */
+.rsvp-line { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.rsvp-line button { min-height: 40px; padding: 8px 18px; display: inline-flex; align-items: center; gap: 6px; }
+.rsvp-count { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+.stock-disclaimer { display: flex; gap: 10px; align-items: flex-start; margin-bottom: var(--sp-3); }
+.stock-disclaimer svg { flex: none; margin-top: 2px; }
+.stock-filters { display: flex; flex-direction: column; gap: var(--sp-2); }
+.stock-groups { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-q { background: var(--g); color: var(--text); border: 1.5px solid var(--border-strong); box-shadow: none; min-height: 38px; padding: 6px 14px; font-size: 0.85rem; }
+.chip-q.on { background: var(--btn); color: var(--on-btn); border-color: var(--btn); }
+@media (hover: hover) { .chip-q:hover:not(:disabled):not(.on) { background: var(--sel); } }
+.stock-head { display: flex; justify-content: space-between; gap: var(--sp-2); flex-wrap: wrap; align-items: flex-start; }
+.stock-head h3 { margin: 0 0 2px; border: 0; padding: 0; }
+.stock-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.stock-stale { font-size: 0.78rem; font-weight: 600; color: var(--orange); }
+.stock-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: var(--sp-3) 0; }
+.stock-tile { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 6px; border-radius: var(--r-lg); background: var(--g); border: 1px solid var(--gb); }
+.stock-tile.hl { border: 2px solid var(--text); }
+.stock-group { font-weight: 700; font-size: 0.95rem; }
+.stock-units { font-family: var(--font-display); font-size: 1.7rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
+.stock-level { display: inline-flex; align-items: center; gap: 5px; font-size: 0.76rem; font-weight: 600; color: var(--text-soft); }
+.stock-level i { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); display: inline-block; }
+.stock-tile[data-level="Available"] .stock-level i { background: #34C759; }
+.stock-tile[data-level="Low"] .stock-level i { background: #FF9F0A; }
+.stock-tile[data-level="None"] .stock-level i { background: transparent; border: 2px solid var(--text-soft); }
+.stock-foot { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.stock-foot .btn-outline { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 16px; }
+.stock-edit-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: var(--sp-2); }
+.stock-coords { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stock-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: var(--sp-2); }
+@media (max-width: 680px) { .stock-grid, .stock-edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stock-meta { align-items: flex-start; } }
+.stock-filters input { width: 100%; background: var(--g); border: 1.5px solid var(--border-strong); border-radius: var(--r-md); padding: 10px 14px; min-height: var(--tap); }
+.stock-filters input:focus { border-color: var(--brand); background: var(--sel); }

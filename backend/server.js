@@ -19,6 +19,7 @@ const campsRoutes = require("./routes/camps");
 const adminRoutes = require("./routes/admin");
 const cardRoutes = require("./routes/cards");
 const recurringRoutes = require("./routes/recurring");
+const stockRoutes = require("./routes/stock");
 const { applySecurity, limiters } = require("./middleware/security");
 const { backfillLifecycleFields, startMaintenanceLoop } = require("./utils/lifecycle");
 const Donor = require("./models/Donor");
@@ -58,6 +59,7 @@ app.use("/api/camps", campsRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/cards", cardRoutes);
 app.use("/api/recurring", recurringRoutes);
+app.use("/api/stock", stockRoutes);
 
 // Fallback error handler
 app.use((err, req, res, next) => {

@@ -48,7 +48,10 @@ export function CardFront({ card, qr }) {
       <div className="rs-bottom">
         <div>
           <div className="rs-id">{card.cardId}</div>
-          <div className="rs-since">{partner ? "Hospital partner" : `Member since ${memberSinceLabel(card.memberSince)}`}</div>
+          <div className="rs-since">
+            {partner ? "Hospital partner" : `Member since ${memberSinceLabel(card.memberSince)}`}
+            {!partner && card.referralsDonated > 0 && ` · Invited ${card.referralsDonated} donor${card.referralsDonated > 1 ? "s" : ""}`}
+          </div>
         </div>
         {qr && <img className="rs-qr" src={qr} alt={`QR code that opens the verify page for card ${card.cardId}`} />}
       </div>

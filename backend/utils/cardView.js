@@ -44,6 +44,7 @@ function buildCardView(card, user, donors = []) {
     eligibleToday: donor ? next === null : null,
     photo: familyId ? null : u.photo || null,
     donorId: donor?._id || null,
+    referralsDonated: familyId ? 0 : Number(u.referralCount) || 0, // only the account holder's own card
   };
 }
 

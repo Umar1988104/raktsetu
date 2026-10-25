@@ -1,7 +1,7 @@
 import EmptyState from "../components/EmptyState";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Tent, MapPin, Calendar, Accessibility, Plus, Pencil, Trash2 } from "lucide-react";
+import { Tent, MapPin, Calendar, Accessibility, Plus, Pencil, Trash2, Check, Users } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
 import { getCurrentLocation } from "../geolocation";
@@ -16,6 +16,22 @@ export default function CampsPage() {
   const [camps, setCamps] = useState(null);
   const [accessibleOnly, setAccessibleOnly] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [going, setGoing] = useState(() => new Set());
+  const canRsvp = !!firebaseUser && !!role && role !== "hospital";
+
+  useEffect(() => {
+    if (!canRsvp) return;
+    api.get("/api/camps/rsvps/mine").then((d) => setGoing(new Set(d.campIds))).catch(() => {});
+  }, [canRsvp]);
+
+  function setCampGoing(id, value) {
+    setGoing((prev) => {
+      const next = new Set(prev);
+      if (value) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
 
   function load() {
     api
@@ -88,6 +104,9 @@ export default function CampsPage() {
                     {c.accessibility?.groundFloor && <span className="pill pill-verified">Ground floor</span>}
                     {c.accessibility?.accessibleParking && <span className="pill pill-verified">Accessible parking</span>}
                   </div>
+                  {role !== "hospital" && (
+                    <RsvpControl camp={c} signedIn={canRsvp} loggedOut={!firebaseUser} going={going.has(c._id)} onChange={(v) => setCampGoing(c._id, v)} />
+                  )}
                 </div>
               </div>
             </div>
@@ -95,6 +114,48 @@ export default function CampsPage() {
         )}
       </div>
       </div>
+    </div>
+  );
+}
+
+// "I'll come" for a camp (v2.1). We email one reminder the day before. Hospitals
+// only ever see how many people are coming, never who.
+function RsvpControl({ camp, signedIn, loggedOut, going, onChange }) {
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+
+  if (loggedOut) {
+    return (
+      <p className="status rsvp-line"><Link to="/login">Log in</Link> to RSVP and get a reminder the day before.</p>
+    );
+  }
+  if (!signedIn) return null;
+
+  async function toggle() {
+    setBusy(true);
+    try {
+      if (going) {
+        await api.del(`/api/camps/${camp._id}/rsvp`);
+        onChange(false);
+        toast("RSVP cancelled.", "success");
+      } else {
+        await api.post(`/api/camps/${camp._id}/rsvp`);
+        onChange(true);
+        toast("You're on the list — we'll email you a reminder the day before.", "success");
+      }
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="rsvp-line">
+      <button type="button" className={going ? "secondary" : ""} aria-pressed={going} onClick={toggle} disabled={busy}>
+        {going ? <><Check size={14} aria-hidden="true" /> You&apos;re going — cancel</> : <>I&apos;ll come</>}
+      </button>
+      {going && <span className="status">We&apos;ll email you a reminder the day before.</span>}
     </div>
   );
 }
@@ -244,6 +305,7 @@ function ManageMyCamps({ onChanged, refreshKey }) {
           <div>
             <div className="row-title">{c.name}</div>
             <div className="row-sub">{new Date(c.date).toLocaleDateString(undefined, { dateStyle: "medium" })} · {c.address}, {c.area}</div>
+            <div className="row-sub rsvp-count"><Users size={12} aria-hidden="true" /> {c.rsvpCount || 0} {c.rsvpCount === 1 ? "person is" : "people are"} going</div>
           </div>
           <div className="plan-actions">
             <button type="button" className="ghost" onClick={() => setEditing(c)}><Pencil size={14} /> Edit</button>

@@ -12,6 +12,7 @@ import AccountInfoForm from "../components/AccountInfoForm";
 import FamilyMembersSection from "../components/FamilyMembersSection";
 import Skeleton from "../components/Skeleton";
 import EligibilityCheck from "../components/EligibilityCheck";
+import InviteCard from "../components/InviteCard";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -86,6 +87,7 @@ function DonorProfile() {
 
       <AccountInfoForm />
       <FamilyMembersSection familyMembers={familyMembers} onChange={handleFamilyChange} />
+      <InviteCard />
 
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>

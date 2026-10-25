@@ -45,6 +45,15 @@ const userSchema = new mongoose.Schema(
     // One login can manage multiple people (v1.1) — a family member can be the
     // patient on a request, or have their own Donor profile under this account.
     familyMembers: [familyMemberSchema],
+    // Referrals (v2.1). `referralCode` is a random invite code (never derived from
+    // anything personal). `referredBy` and `referralCredited` are internal and
+    // hidden by default (select: false) so they never leave the server by accident.
+    // `referralCount` = invited people whose first donation was recorded; it adds
+    // a small, capped bonus to the inviter's trust score.
+    referralCode: { type: String, unique: true, sparse: true, index: true },
+    referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, select: false },
+    referralCredited: { type: Boolean, default: false, select: false },
+    referralCount: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

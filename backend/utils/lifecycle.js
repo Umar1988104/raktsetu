@@ -120,6 +120,7 @@ async function runMaintenanceTick() {
   try {
     await require("./recurring").generateDueRecurring(now);
     await require("./reminders").sendEligibleAgainReminders(now);
+    await require("./campReminders").sendCampReminders(now);
   } catch (err) {
     console.error("Recurring/reminder step failed:", err.message);
   }
