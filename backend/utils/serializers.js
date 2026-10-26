@@ -196,6 +196,7 @@ function serializeOwnCard(view) {
         memberSince: !!c.show?.memberSince,
         eligibleToday: !!c.show?.eligibleToday,
         referrals: !!c.show?.referrals,
+        badges: !!c.show?.badges,
       },
     },
     regeneratedAt: c.regeneratedAt || null,
@@ -214,6 +215,7 @@ function serializeOwnCard(view) {
     nextEligibleDate: view.nextEligibleDate,
     eligibleToday: view.eligibleToday,
     referralsDonated: view.referralsDonated || 0,
+    badges: view.achievements ? view.achievements.badges : [],
     photo: view.photo,
     emergencyContact: {
       enabled: !!c.emergencyContact?.enabled,
@@ -240,6 +242,7 @@ function serializePublicCard(view) {
   if (show.memberSince && view.memberSince) out.memberSinceYear = new Date(view.memberSince).getFullYear();
   if (show.eligibleToday && view.eligibleToday !== null) out.eligibleToday = !!view.eligibleToday;
   if (show.referrals && view.referralsDonated > 0) out.referralsDonated = view.referralsDonated; // a bare count, opt-in
+  if (show.badges && view.achievements && view.achievements.badges.length) out.badges = view.achievements.badges.map((b) => ({ id: b.id, label: b.label })); // opted in twice: account + card
   return out;
 }
 

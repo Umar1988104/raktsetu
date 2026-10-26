@@ -10,6 +10,7 @@ import { api } from "../api";
 import { UrgencyPill } from "../components/StatusPill";
 import ReadAloudButton from "../components/ReadAloudButton";
 import ShareRequestButton from "../components/ShareRequestButton";
+import RequestPosterButton from "../components/RequestPosterButton";
 import SelfDeclaredNote from "../components/SelfDeclaredNote";
 import ContactButtons from "../components/ContactButtons";
 import MatchMap from "../components/MatchMap";
@@ -165,8 +166,9 @@ export default function RequestStatusPage() {
       )}
 
       {!isExpired && (
-        <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 24, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <ShareRequestButton request={request} />
+          <RequestPosterButton request={request} />
         </div>
       )}
 

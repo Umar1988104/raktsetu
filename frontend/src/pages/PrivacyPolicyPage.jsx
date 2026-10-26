@@ -228,6 +228,28 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <div className="card">
+          <h3>My impact, badges and streaks</h3>
+          <p>
+            The My impact page shows your own donation history and is visible only to you. Badges
+            and streaks are optional and switched off until you turn them on. Even when on, they stay
+            private unless you also switch on &ldquo;My badges&rdquo; in your card&apos;s privacy settings, and
+            then the public card shows badge names only — never dates, counts or streaks. They are
+            only for fun: please donate only when you are eligible, never to keep a streak.
+          </p>
+        </div>
+
+        <div className="card">
+          <h3>Share pictures</h3>
+          <p>
+            The &ldquo;I donated&rdquo; picture and the blood request poster are drawn on your own device and are
+            not uploaded to us. You choose what appears on the &ldquo;I donated&rdquo; picture (name, blood group
+            and date are off or optional). The request poster shows the blood group, units, hospital, area
+            and a QR code to the live status page — never a phone number or a patient&apos;s name. Once you
+            share a picture on WhatsApp or elsewhere, it is outside RaktSetu&apos;s control.
+          </p>
+        </div>
+
+        <div className="card">
           <h3>The help chat</h3>
           <p>
             The help chat is not artificial intelligence. It picks a pre-written answer from a fixed

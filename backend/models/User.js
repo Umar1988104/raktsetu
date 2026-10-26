@@ -54,6 +54,9 @@ const userSchema = new mongoose.Schema(
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, select: false },
     referralCredited: { type: Boolean, default: false, select: false },
     referralCount: { type: Number, default: 0, min: 0 },
+    // v2.1c: badges & streaks are opt-in and private to the owner unless they also
+    // switch on "Badges" in their card settings.
+    achievementsOptIn: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

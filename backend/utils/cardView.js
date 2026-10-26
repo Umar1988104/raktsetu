@@ -1,5 +1,6 @@
 const { getNextEligibleDate } = require("./eligibility");
 const { computeTrustTier } = require("./trust");
+const { computeAchievements } = require("./achievements");
 
 // Gathers everything about whose card this is, from the owner's account and
 // donor profiles. Internal only — never sent as-is. The serializers in
@@ -45,6 +46,8 @@ function buildCardView(card, user, donors = []) {
     photo: familyId ? null : u.photo || null,
     donorId: donor?._id || null,
     referralsDonated: familyId ? 0 : Number(u.referralCount) || 0, // only the account holder's own card
+    // badges: only for the account holder's own card, and only if they opted in
+    achievements: !familyId && u.achievementsOptIn && donor ? computeAchievements({ donationHistory: donor.donationHistory, referralCount: u.referralCount }) : null,
   };
 }
 

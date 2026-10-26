@@ -77,6 +77,7 @@ export default function PublicCardPage() {
                 </span>
               )}
               {card.memberSinceYear && <span className="pill pill-expired">Member since {card.memberSinceYear}</span>}
+              {card.badges?.map((b) => <span key={b.id} className="pill pill-expired">{b.label}</span>)}
               {card.referralsDonated > 0 && <span className="pill pill-expired">Invited {card.referralsDonated} donor{card.referralsDonated > 1 ? "s" : ""} who donated</span>}
               {card.eligibleToday !== undefined && (
                 <span className={`pill ${card.eligibleToday ? "pill-available" : "pill-unavailable"}`}>

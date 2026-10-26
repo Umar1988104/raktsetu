@@ -9,6 +9,7 @@ const FIELDS = [
   { key: "verified", label: "Verified mark", hint: "Shows if a hospital partner verified you." },
   { key: "memberSince", label: "Member since (year)", hint: "Year only." },
   { key: "eligibleToday", label: "“Eligible to donate today”", hint: "A plain yes or no — never dates or history." },
+  { key: "badges", label: "My badges", hint: "Only shows if you've turned on badges in My impact. Badge names only — no dates or streaks." },
   { key: "referrals", label: "Donors I invited", hint: "Only a number: how many friends you invited have donated." },
 ];
 

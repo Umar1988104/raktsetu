@@ -12,8 +12,8 @@ const { PHONE_REGEX } = require("../models/User");
 
 const router = express.Router();
 
-const USER_FIELDS = "name phone email familyMembers photo address alternatePhone role hospitalName partnerVerified isGuest createdAt referralCount";
-const SHOW_KEYS = ["name", "bloodGroup", "tier", "verified", "memberSince", "eligibleToday", "referrals"];
+const USER_FIELDS = "name phone email familyMembers photo address alternatePhone role hospitalName partnerVerified isGuest createdAt referralCount achievementsOptIn";
+const SHOW_KEYS = ["name", "bloodGroup", "tier", "verified", "memberSince", "eligibleToday", "referrals", "badges"];
 
 // Public lookups are rate limited per IP: a general cap, plus a much lower cap
 // on lookups that miss (someone guessing IDs). In-memory; resets on restart.

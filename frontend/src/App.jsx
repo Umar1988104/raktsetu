@@ -31,6 +31,7 @@ const CampsPage = lazy(() => import("./pages/CampsPage"));
 const TrackPage = lazy(() => import("./pages/TrackPage"));
 const CertificatePage = lazy(() => import("./pages/CertificatePage"));
 const UpdatesPage = lazy(() => import("./pages/UpdatesPage"));
+const MyImpactPage = lazy(() => import("./pages/MyImpactPage"));
 const StockPage = lazy(() => import("./pages/StockPage"));
 const ImpactPage = lazy(() => import("./pages/ImpactPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
@@ -94,6 +95,7 @@ export default function App() {
             <Route path="/updates" element={<UpdatesPage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/card" element={<MyCardPage />} />
+            <Route path="/my-impact" element={<MyImpactPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />

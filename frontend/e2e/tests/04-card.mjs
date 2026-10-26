@@ -13,7 +13,7 @@ export default async function ({ newPage, fixtures, ok, sleep, BASE }) {
   ok("tapping again flips it", await p.evaluate(() => getComputedStyle(document.querySelectorAll(".flip-inner")[2]).transform !== "none"));
   await p.click("button.secondary");
   await sleep(900);
-  ok("privacy sheet lists the switches", (await p.$$(".sheet button[role=switch]")).length === 8);
+  ok("privacy sheet lists the switches", (await p.$$(".sheet button[role=switch]")).length === 9);
   await p.keyboard.press("Escape");
   await sleep(700);
   await p.close();

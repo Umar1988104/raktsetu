@@ -21,6 +21,7 @@ const HI = {
   "Choose a view": "एक दृश्य चुनें",
   "Help": "मदद",
   "Blood Stock": "रक्त भंडार",
+  "My Impact": "मेरा प्रभाव",
   "A RaktSetu donor invited you. If you sign up as a donor, they get a thank-you when you make your first donation.": "एक रक्तसेतु दाता ने आपको आमंत्रित किया है। यदि आप दाता के रूप में साइन अप करते हैं, तो आपके पहले दान पर उन्हें धन्यवाद-अंक मिलेंगे।",
   "Close help": "मदद बंद करें",
   "Ask a question": "सवाल पूछें",

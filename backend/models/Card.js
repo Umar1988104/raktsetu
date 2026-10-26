@@ -20,6 +20,7 @@ const cardSchema = new mongoose.Schema(
       verified: { type: Boolean, default: true },
       memberSince: { type: Boolean, default: false },
       eligibleToday: { type: Boolean, default: false }, // yes/no only
+      badges: { type: Boolean, default: false }, // v2.1c: needs achievementsOptIn too
       referrals: { type: Boolean, default: false }, // v2.1: "invited N donors" — off unless the owner turns it on
     },
 

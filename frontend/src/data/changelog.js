@@ -2,6 +2,16 @@
 // invented dates. Edit freely as you ship more.
 export const CHANGELOG = [
   {
+    version: "v2.1c",
+    date: "2026-10-26",
+    title: "My impact, share pictures and badges",
+    items: [
+      "New My impact page: your donations, a year-by-year chart and how many people you may have helped",
+      "Make an “I donated” picture to share (you choose what is on it) and a poster for a blood request with a QR code",
+      "Optional badges and streaks — off until you turn them on, and never on your public card unless you choose",
+    ],
+  },
+  {
     version: "v2.1b",
     date: "2026-10-25",
     title: "Camp RSVPs and blood stock",

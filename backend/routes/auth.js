@@ -4,6 +4,7 @@ const Donor = require("../models/Donor");
 const verifyToken = require("../middleware/verifyToken");
 const { isAdminUid } = require("../middleware/requireAdmin");
 const { resolveReferrer, ensureReferralCode } = require("../utils/referral");
+const { computeAchievements } = require("../utils/achievements");
 
 const router = express.Router();
 
@@ -141,6 +142,36 @@ router.get("/me/referral", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to load your invite link" });
+  }
+});
+
+// Badges & streaks (v2.1c) — opt-in. Off means nothing is computed or returned.
+router.get("/me/achievements", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ error: "Profile not found" });
+    if (user.role !== "donor" || user.isGuest) return res.status(403).json({ error: "Badges are for donor accounts" });
+    if (!user.achievementsOptIn) return res.json({ enabled: false });
+    const donor = await Donor.findOne({ user: user._id, familyMemberId: null });
+    res.json({ enabled: true, ...computeAchievements({ donationHistory: donor ? donor.donationHistory : [], referralCount: user.referralCount }) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load your badges" });
+  }
+});
+
+router.patch("/me/achievements", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ error: "Profile not found" });
+    if (user.role !== "donor" || user.isGuest) return res.status(403).json({ error: "Badges are for donor accounts" });
+    if (typeof req.body?.enabled !== "boolean") return res.status(400).json({ error: "enabled must be true or false" });
+    user.achievementsOptIn = req.body.enabled;
+    await user.save();
+    res.json({ enabled: user.achievementsOptIn });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to save your choice" });
   }
 });
 
