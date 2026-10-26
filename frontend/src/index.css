@@ -1601,3 +1601,23 @@ button[aria-checked="true"] .vial-fill::before { animation: vial-wave 2.2s ease-
 .share-options input[type="text"], .share-options input:not([type]) { width: 100%; background: var(--g); border: 1.5px solid var(--border-strong); border-radius: var(--r-md); padding: 10px 14px; min-height: var(--tap); }
 .check-row { display: flex; align-items: center; gap: 10px; font-weight: 500; }
 .check-row input { width: 20px; height: 20px; flex: none; }
+
+/* =====================================================================
+   22. QUICK TOUR + CRASH MESSAGE (v2.1d)
+   ===================================================================== */
+.tour-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: var(--sp-3); }
+.tour-chip { background: var(--g); border: 1px solid var(--gb); border-radius: var(--r-full); padding: 4px 14px; font-size: 0.8rem; font-weight: 700; box-shadow: var(--glass-edge); }
+.tour-count { font-size: 0.82rem; color: var(--text-soft); font-weight: 600; }
+.tour-body { min-height: 230px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.tour-body h2 { margin: 6px 0 0; font-size: 1.55rem; line-height: 1.15; letter-spacing: -0.03em; }
+.tour-body p { margin: 0; color: var(--text-soft); font-size: 1rem; line-height: 1.55; }
+.tour-icon { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; background: var(--btn); color: var(--on-btn); box-shadow: var(--glass-edge), 0 10px 22px rgba(18, 20, 26, 0.25); }
+@media (prefers-reduced-motion: no-preference) { .tour-body { animation: chat-in 0.32s var(--ease-spring) both; } }
+.tour-dots { display: flex; gap: 6px; margin: var(--sp-3) 0; }
+.tour-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); opacity: 0.45; display: block; }
+.tour-dots i.done { opacity: 0.8; }
+.tour-dots i.on { width: 26px; border-radius: 6px; background: var(--red); opacity: 1; }
+.tour-actions { display: flex; justify-content: space-between; gap: 10px; }
+.tour-actions button { min-width: 110px; }
+.crash-card { max-width: 560px; margin: var(--sp-6) auto; text-align: left; }
+.crash-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: var(--sp-2); }

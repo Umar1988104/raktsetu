@@ -6,6 +6,8 @@ import { useAuth } from "../context/AuthContext";
 import { useLang } from "../i18n";
 import LanguageToggle from "../components/LanguageToggle";
 import AppearanceButton from "../components/AppearanceSheet";
+import ErrorBoundary from "../components/ErrorBoundary";
+import WelcomeTour from "../components/WelcomeTour";
 import { BrandLink, BridgeLoader } from "../components/Brand";
 import { useConfirm, useToast } from "../components/UiFeedback";
 import { PageTransition } from "../motion/kit";
@@ -266,13 +268,16 @@ export default function DashboardLayout() {
         </header>
         <main className="content" ref={mainRef}>
           <AccountBanners />
-          <Suspense fallback={<BridgeLoader />}>
-            <PageTransition>
-              <Outlet />
-            </PageTransition>
-          </Suspense>
+          <ErrorBoundary resetKey={location.pathname}>
+            <Suspense fallback={<BridgeLoader />}>
+              <PageTransition>
+                <Outlet />
+              </PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </main>
       </div>
+      <WelcomeTour />
     </div>
     </RefreshProvider>
   );

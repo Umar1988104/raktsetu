@@ -106,6 +106,8 @@ export async function newPage(browser, { fx, width = 1280, height = 800, scheme 
     if (sessionStorage.getItem("__init")) return;
     sessionStorage.setItem("__init", "1");
     localStorage.clear();
+    // The welcome tour is covered by its own test; everywhere else, pretend it was seen.
+    localStorage.setItem("rs_tour", JSON.stringify({ u1: { welcome: true, whatsNew: "v2.1" }, "umar@example.com": { welcome: true, whatsNew: "v2.1" }, "Umar Sikandri": { welcome: true, whatsNew: "v2.1" } }));
     for (const [k, v] of Object.entries(f)) localStorage.setItem(k, v);
     if (p) localStorage.setItem("raktsetu_prefs", JSON.stringify(p));
   }, prefs, flags);

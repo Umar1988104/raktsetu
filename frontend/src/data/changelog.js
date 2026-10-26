@@ -2,6 +2,16 @@
 // invented dates. Edit freely as you ship more.
 export const CHANGELOG = [
   {
+    version: "v2.1d",
+    date: "2026-10-26",
+    title: "Welcome tour and a fix",
+    items: [
+      "New quick tour: new people see what each feature does, and returning people see what is new — just Skip or Next",
+      "Fixed: My requests showed a blank screen when you had no active requests",
+      "If a page ever has a problem, you now see a helpful message and the menu keeps working, instead of a blank screen",
+    ],
+  },
+  {
     version: "v2.1c",
     date: "2026-10-26",
     title: "My impact, share pictures and badges",

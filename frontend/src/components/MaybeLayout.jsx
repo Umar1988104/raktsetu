@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
+import ErrorBoundary from "./ErrorBoundary";
 import { useAuth } from "../context/AuthContext";
 import { useLang } from "../i18n";
 import LanguageToggle from "./LanguageToggle";
@@ -15,6 +16,7 @@ const DashboardLayout = lazy(() => import("../layouts/DashboardLayout"));
 export default function MaybeLayout() {
   const { firebaseUser, profile, loading } = useAuth();
   const { t } = useLang();
+  const location = useLocation();
 
   if (loading) return <BridgeLoader fullscreen />;
   if (firebaseUser && profile) {
@@ -47,7 +49,9 @@ export default function MaybeLayout() {
       <main style={{ maxWidth: 960, margin: "0 auto", padding: "32px 16px 56px" }}>
         <Suspense fallback={<BridgeLoader />}>
           <PageTransition>
-            <Outlet />
+            <ErrorBoundary resetKey={location.pathname}>
+              <Outlet />
+            </ErrorBoundary>
           </PageTransition>
         </Suspense>
       </main>

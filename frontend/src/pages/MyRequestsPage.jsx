@@ -1,6 +1,6 @@
 import EmptyState from "../components/EmptyState";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { rememberRow } from "../utils/flip";
 import { Droplet, ChevronRight, Repeat } from "lucide-react";
 import { api } from "../api";

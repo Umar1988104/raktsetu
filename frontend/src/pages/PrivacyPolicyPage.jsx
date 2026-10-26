@@ -260,6 +260,15 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <div className="card">
+          <h3>The quick tour</h3>
+          <p>
+            The welcome and &ldquo;What&apos;s new&rdquo; tours remember in your own browser which ones you have
+            already seen, so they do not repeat. Nothing about it is sent to our server. You can
+            replay the tour from your Profile page.
+          </p>
+        </div>
+
+        <div className="card">
           <h3>Display settings stored on your device</h3>
           <p>
             Your language, theme (light / dark), contrast and text-size choices are saved in your
